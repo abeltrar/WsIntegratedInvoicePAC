@@ -68,6 +68,7 @@ namespace WsIntegratedInvoicePAC.Models
         public string? ABA { get; set; }
         public string? SWIFT { get; set; }
         public string? ACCT { get; set; }
+        public string? DateDue_Sec { get; set; }
 
 
     }
