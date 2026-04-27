@@ -17,5 +17,6 @@ namespace WsIntegratedInvoicePAC.Models
         public string SignatureFirst6 { get; set; }
         public string FechaVencimiento { get; set; }
         public string QrB64 { get; set; }
+        public string? comentarios { get; set; }
     }
 }

@@ -21,6 +21,7 @@ namespace WsIntegratedInvoicePAC.Models
         public string Unidad_Medida { get; set; }
         public decimal Total_Factura { get; set; }
         public decimal Subtotal_Linea { get; set; }
+        public string? Descripcion2 { get; set; }
       
     }
 }

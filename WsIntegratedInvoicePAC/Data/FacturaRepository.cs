@@ -275,8 +275,68 @@ namespace WsIntegratedInvoicePAC.Data
 
             }
 
+
+
+
+
         }
 
+
+
+        public async Task UpdateQRBase64(string nroFactura, string QRBase64)
+        {
+
+            try
+            {
+
+                await _context.Database.ExecuteSqlRawAsync(
+                    "EXEC Sp_FE_UpdateQRBase64 {0}, {1}",
+                    nroFactura,
+                    QRBase64
+                    
+                   
+                );
+            }
+            catch (SqlException sqlEx)
+            {
+                string detalles = $"Error {sqlEx.Number} en procedimiento {sqlEx.Procedure}, línea {sqlEx.LineNumber}: {sqlEx.Message}";
+
+                var log = new FE_System_Log
+                {
+                    Invoice = nroFactura,
+                    Fecha = DateTime.Now,
+                    Modulo = "InsertResposeFail",
+                    Mensaje = detalles,
+                    StackTrace = sqlEx.StackTrace
+                };
+
+                _context.FE_System_Log.Add(log);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine($"Error Insertando respuesta de error: {ex.Message}");
+
+                var log = new FE_System_Log
+                {
+                    Invoice = nroFactura,
+                    Fecha = DateTime.Now,
+                    Modulo = "InsertResposeFail",
+                    Mensaje = ex.Message,
+                    StackTrace = ex.StackTrace
+                };
+
+                _context.FE_System_Log.Add(log);
+                await _context.SaveChangesAsync();
+
+            }
+
+
+
+
+
+        }
 
 
 

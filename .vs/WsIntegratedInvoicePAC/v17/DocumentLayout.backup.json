@@ -3,24 +3,28 @@
   "WorkspaceRootPath": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|c:\\users\\apbeltran\\source\\repos\\wsintegratedinvoicepac\\wsintegratedinvoicepac\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|solutionrelative:wsintegratedinvoicepac\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|c:\\users\\apbeltran\\source\\repos\\wsintegratedinvoicepac\\wsintegratedinvoicepac\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|solutionrelative:wsintegratedinvoicepac\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|c:\\users\\apbeltran\\source\\repos\\wsintegratedinvoicepac\\wsintegratedinvoicepac\\controller\\facturacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|solutionrelative:wsintegratedinvoicepac\\controller\\facturacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|c:\\users\\apbeltran\\source\\repos\\wsintegratedinvoicepac\\wsintegratedinvoicepac\\viewpdf\\facturapdf.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|solutionrelative:wsintegratedinvoicepac\\viewpdf\\facturapdf.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|c:\\users\\apbeltran\\source\\repos\\wsintegratedinvoicepac\\wsintegratedinvoicepac\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|solutionrelative:wsintegratedinvoicepac\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|c:\\users\\apbeltran\\source\\repos\\wsintegratedinvoicepac\\wsintegratedinvoicepac\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|solutionrelative:wsintegratedinvoicepac\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|c:\\users\\apbeltran\\source\\repos\\wsintegratedinvoicepac\\wsintegratedinvoicepac\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|solutionrelative:wsintegratedinvoicepac\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|c:\\users\\apbeltran\\source\\repos\\wsintegratedinvoicepac\\wsintegratedinvoicepac\\models\\fe_invoice_transaccion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|solutionrelative:wsintegratedinvoicepac\\models\\fe_invoice_transaccion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|c:\\users\\apbeltran\\source\\repos\\wsintegratedinvoicepac\\wsintegratedinvoicepac\\models\\facturadata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|solutionrelative:wsintegratedinvoicepac\\models\\facturadata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{B58344A8-F7A8-453E-AE16-56FF7BE71C83}|WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj|c:\\users\\apbeltran\\source\\repos\\wsintegratedinvoicepac\\wsintegratedinvoicepac\\models\\fe_config_webpos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -34,32 +38,27 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 6,
           "Children": [
             {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\Program.cs",
-              "RelativeDocumentMoniker": "WsIntegratedInvoicePAC\\Program.cs",
-              "ToolTip": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\Program.cs",
-              "RelativeToolTip": "WsIntegratedInvoicePAC\\Program.cs",
-              "ViewState": "AgIAAC4AAAAAAAAAAAAAwBwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-25T14:45:52.648Z"
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\appsettings.json",
-              "RelativeDocumentMoniker": "WsIntegratedInvoicePAC\\appsettings.json",
-              "ToolTip": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\appsettings.json",
-              "RelativeToolTip": "WsIntegratedInvoicePAC\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAABdAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-09-25T14:06:58.785Z",
-              "EditorCaption": ""
+              "DocumentIndex": 2,
+              "Title": "Worker.cs",
+              "DocumentMoniker": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\Worker.cs",
+              "RelativeDocumentMoniker": "WsIntegratedInvoicePAC\\Worker.cs",
+              "ToolTip": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\Worker.cs",
+              "RelativeToolTip": "WsIntegratedInvoicePAC\\Worker.cs",
+              "ViewState": "AgIAAI4CAAAAAAAAAAAkwJoCAABaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-16T14:32:02.668Z"
             },
             {
               "$type": "Document",
@@ -69,13 +68,25 @@
               "RelativeDocumentMoniker": "WsIntegratedInvoicePAC\\Models\\FE_Invoice_Transaccion.cs",
               "ToolTip": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\Models\\FE_Invoice_Transaccion.cs",
               "RelativeToolTip": "WsIntegratedInvoicePAC\\Models\\FE_Invoice_Transaccion.cs",
-              "ViewState": "AgIAAC0AAAAAAAAAAAAswDkAAAAkAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-23T13:15:52.83Z"
+              "WhenOpened": "2025-12-16T14:27:16.125Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
+              "Title": "FacturaData.cs",
+              "DocumentMoniker": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\Models\\FacturaData.cs",
+              "RelativeDocumentMoniker": "WsIntegratedInvoicePAC\\Models\\FacturaData.cs",
+              "ToolTip": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\Models\\FacturaData.cs",
+              "RelativeToolTip": "WsIntegratedInvoicePAC\\Models\\FacturaData.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAA+wAkAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-16T14:27:11.752Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "FE_config_WEBPOS.cs",
               "DocumentMoniker": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\Models\\FE_config_WEBPOS.cs",
               "RelativeDocumentMoniker": "WsIntegratedInvoicePAC\\Models\\FE_config_WEBPOS.cs",
@@ -83,33 +94,44 @@
               "RelativeToolTip": "WsIntegratedInvoicePAC\\Models\\FE_config_WEBPOS.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-23T13:15:50.73Z"
+              "WhenOpened": "2025-12-16T14:27:04.567Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "FacturaPDF.cs",
+              "DocumentMoniker": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\ViewPDF\\FacturaPDF.cs",
+              "RelativeDocumentMoniker": "WsIntegratedInvoicePAC\\ViewPDF\\FacturaPDF.cs",
+              "ToolTip": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\ViewPDF\\FacturaPDF.cs",
+              "RelativeToolTip": "WsIntegratedInvoicePAC\\ViewPDF\\FacturaPDF.cs",
+              "ViewState": "AgIAAFIBAAAAAAAAAAAuwF0BAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T13:02:22.038Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\appsettings.json",
+              "RelativeDocumentMoniker": "WsIntegratedInvoicePAC\\appsettings.json",
+              "ToolTip": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\appsettings.json",
+              "RelativeToolTip": "WsIntegratedInvoicePAC\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAB7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-03-26T01:01:38.577Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "Worker.cs",
-              "DocumentMoniker": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\Worker.cs",
-              "RelativeDocumentMoniker": "WsIntegratedInvoicePAC\\Worker.cs",
-              "ToolTip": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\Worker.cs",
-              "RelativeToolTip": "WsIntegratedInvoicePAC\\Worker.cs",
-              "ViewState": "AgIAABUBAAAAAAAAAADwvx4BAAAAAAAAAAAAAA==",
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\Program.cs",
+              "RelativeDocumentMoniker": "WsIntegratedInvoicePAC\\Program.cs",
+              "ToolTip": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\Program.cs",
+              "RelativeToolTip": "WsIntegratedInvoicePAC\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAABVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-23T12:54:03.997Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "FacturaController.cs",
-              "DocumentMoniker": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\Controller\\FacturaController.cs",
-              "RelativeDocumentMoniker": "WsIntegratedInvoicePAC\\Controller\\FacturaController.cs",
-              "ToolTip": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\Controller\\FacturaController.cs",
-              "RelativeToolTip": "WsIntegratedInvoicePAC\\Controller\\FacturaController.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAADgvxsAAAAyAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-19T12:22:18.918Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-26T01:02:37.357Z"
             }
           ]
         }

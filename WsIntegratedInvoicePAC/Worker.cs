@@ -18,6 +18,9 @@ using Newtonsoft.Json.Linq;
 using MailKit.Net.Smtp;
 using MimeKit;
 using static System.Formats.Asn1.AsnWriter;
+using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Serilog;
 
 
 
@@ -72,9 +75,9 @@ namespace WsIntegratedInvoicePAC
                         }
 
 
-                        _logger.LogInformation("Obteniendo token...");
+                        //_logger.LogInformation("Obteniendo token...");
 
-                        var token = await GetTokenAsync();
+                        //var token = await GetTokenAsync();
 
 
 
@@ -88,23 +91,23 @@ namespace WsIntegratedInvoicePAC
                             // Obtener token
 
 
-                            if (string.IsNullOrEmpty(token))
-                            {
-                                Console.WriteLine("No se pudo obtener el token.");
-                                var log = new FE_System_Log
-                                {
-                                    Invoice = "Token",
-                                    Fecha = DateTime.Now,
-                                    Modulo = "ObteniendoToken",
-                                    Mensaje = "No se pudo obtener el token de WebPos",
-                                    StackTrace = "No se pudo obtener token está vacío o NULL, intente el proceso de nuevo"
-                                };
+                            //if (string.IsNullOrEmpty(token))
+                            //{
+                            //    Console.WriteLine("No se pudo obtener el token.");
+                            //    var log = new FE_System_Log
+                            //    {
+                            //        Invoice = "Token",
+                            //        Fecha = DateTime.Now,
+                            //        Modulo = "ObteniendoToken",
+                            //        Mensaje = "No se pudo obtener el token de WebPos",
+                            //        StackTrace = "No se pudo obtener token está vacío o NULL, intente el proceso de nuevo"
+                            //    };
 
-                                await facturaController.InsertLog(log);
+                            //    await facturaController.InsertLog(log);
 
 
-                                return;
-                            }
+                            //    return;
+                            //}
 
                         }
 
@@ -118,6 +121,8 @@ namespace WsIntegratedInvoicePAC
                         string UsuarioSMTP = _config["ApiSettings:UsuarioSMTP"];
                         string PassSMTP = _config["ApiSettings:PassSMTP"];
                         string EmailEmisor = _config["ApiSettings:EmailEmisor"];
+                        string ApiKey = _config["ApiSettings:ApiKey"];
+
 
 
 
@@ -132,18 +137,7 @@ namespace WsIntegratedInvoicePAC
                             if (!facturas.Any())
                             {
                                 Console.WriteLine("El listado de facturas está vacío");
-                                var log = new FE_System_Log
-                                {
-                                    Invoice = "",
-                                    Fecha = DateTime.Now,
-                                    Modulo = "ObtenerFacturasPendientes",
-                                    Mensaje = "La lista de facturas pendientes de encuentra vacia",
-                                    StackTrace = "La lista de facturas no se llenó intente el proceso de nuevo o revise errores de SQL del SP Sp_FE_GetInvoicePending"
-                                };
-
-                                await facturaController.InsertLog(log);
-
-                                return;
+                               
 
                             }
 
@@ -151,230 +145,584 @@ namespace WsIntegratedInvoicePAC
                             var facturasAgrupadas = facturas.GroupBy(f => f.Factura_Numero);
 
                             var facturasEstado0 = facturasAgrupadas
-                                .Where(g => g.First().Estado == "0")
+                                 .Where(g => g.Any(x => x.Estado == "0"))
                                 .ToList();
 
                             var facturasEstado5 = facturasAgrupadas
-                                .Where(g => g.First().Estado == "5")
+                                .Where(g => g.Any(x => x.Estado == "5"))
                                 .ToList();
 
-                            foreach (var grupo in facturasEstado0)
+                            if (facturasEstado0 != null && facturasEstado0.Any())
                             {
-                                var facturaBase = grupo.First();
+                                _logger.LogInformation("Iniciar a recorrer el array con facturas en estado 0");
 
-                                string companyLicCod = facturaBase.companyLicCod;
-                                string tipo_factura = "";
-                                string docNumber = "";
-                                string invoiceNumber = "";
-                                string posCode = facturaBase.posCod;
-                                string branchCod = facturaBase.branchCod;
-                                decimal? total_conversion = (facturaBase.Total_Factura / facturaBase.tasa_cambio);
-
-                                if (facturaBase.Tipo_Factura == "CU")
+                                foreach (var grupo in facturasEstado0)
                                 {
-                                    tipo_factura = "46";
-                                    docNumber = facturaBase.NCF;
-                                    //docNumber = "E461234567739";
-                                    invoiceNumber = "";
 
-                                }
-                                else if (facturaBase.Tipo_Factura == "CR")
-                                {
-                                    tipo_factura = "34";
-                                    docNumber = facturaBase.NCF;
-                                    //docNumber = "E341234565431";
-                                    invoiceNumber = facturaBase.Factura_Afectada_NC;
+                                    _logger.LogInformation("Armando datos de factura para enviar");
 
-                                }
+                                    var facturaBase = grupo.First();
 
-                                //CONSUTRUCCIÓN DE ARRAY PARA CONSTRUIR LA FACTURA
+                                    string companyLicCod = facturaBase.companyLicCod;
+                                    string tipo_factura = "";
+                                    string docNumber = "";
+                                    string customerType = "";
+                                    string invoiceNumber = "";
+                                    string currency = "";
+                                    string incoterm = "";
+                                    string destCountry = "";
+                                    int tax = 0;
+                                    decimal? totValEst = null;
+                                    string posCode = facturaBase.posCod;
+                                    string branchCod = facturaBase.branchCod;
+                                    decimal? total_conversion = facturaBase.Total_Factura;
+                                    DateTime? invoiceNumberRefDate = null;
+                                   
 
-                                var items_fact = grupo.Select(linea => new ItemFactura
-                                {
-                                    Linea_Numero = linea.Linea_Numero,
-                                    entrega_numero = linea.Entrega_Numero,
-                                    Cantidad_Enviada = linea.Cantidad_Enviada,
-                                    Precio_Unitario = linea.Precio_Unitario,
-                                    Producto_Codigo = linea.Producto_Codigo,
-                                    Producto_Descripcion = linea.Producto_Descripcion,
-                                    Cantidad_ordenada = linea.Cantidad_Ordenada,
-                                    Lote_Numero = linea.Lote_Numero,
-                                    Unidad_Medida = linea.Unidad_Medida,
-                                    Total_Factura = linea.Total_Factura,
-                                    Subtotal_Linea = linea.Subtotal_Linea
-
-
-
-                                }).ToArray();
-
-
-                                // Construimos el array de items con todas las líneas
-                                var items = grupo.Select(linea => new
-                                {
-                                    id = linea.Linea_Numero,
-                                    qty = linea.Cantidad_Enviada,
-                                    price = linea.Precio_Unitario,
-                                    code = linea.Producto_Codigo,
-                                    desc = linea.Producto_Descripcion,
-                                    itemClass = 0,
-                                    tax = 0,
-                                    comments = "",
-                                    damt = 0.00m
-                                }).ToArray();
-
-                                var payload = new
-                                {
-                                    fiscalDoc = new
+                                    if (facturaBase.Tipo_Factura == "CU")
                                     {
-                                        companyLicCod = facturaBase.companyLicCod,
-                                        branchCod = facturaBase.branchCod,
-                                        posCod = facturaBase.posCod,
-                                        docType = tipo_factura,
-                                        docNumber = docNumber,
-                                        docNumberDueDate = DateTime.Parse(facturaBase.DateDue_Sec).ToString("yyyy-MM-dd"),
-                                        //docNumberDueDate = "",
-                                        docDate = facturaBase.Factura_Fecha_Emision.ToString("yyyy-MM-dd"),
-                                        invoiceNumber = invoiceNumber,
-                                        customerName = facturaBase.Cliente_Nombre,
-                                        customerRUC = facturaBase.Cliente_Documento_Identidad,
-                                        customerType = "06",
-                                        customerAddress = facturaBase.Cliente_Direccion1,
-                                        email = facturaBase.Cliente_Email,
-                                        currency = "USD",
-                                        currencyRate = facturaBase.tasa_cambio,
-                                        fedo = new
-                                        {
-                                            taxMode = facturaBase.Indicador_TaxMode,
-                                            operMode = "01",
-                                            paymentType = 1,
-                                            incoterm = "FOB",
-                                            destCountry = "US",
-                                            totValEst = total_conversion
-                                        },
-                                        items = items,
-                                        discount = new
-                                        {
-                                            perc = "0%",
-                                            amt = 0
-                                        },
-                                        payments = Array.Empty<object>(),
-                                        trailer = new[]
-                                        {
-                                    new { id = 1, value = "" },
-                                    new { id = 2, value = "" }
-                                }
+                                        tipo_factura = "46";
+                                        docNumber = facturaBase.NCF;
+                                        invoiceNumber = "";
+                                        customerType = "06";
+                                        currency = "USD";
+                                        incoterm = "FOB";
+                                        destCountry = "US";
+                                        totValEst = total_conversion;
+                                        tax = 0;
+                                       
                                     }
-                                };
-
-
-
-                                _logger.LogInformation("Consumiendo servicio de WebPos para enviar información de facturas...");
-
-                                // Enviar JSON
-                                var json = JsonSerializer.Serialize(payload);
-                                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                                var response = await _httpClient.PostAsync(baseurl + "api/fedo/v1/test/SendFileToProcess/" + companyLicCod, content);
-
-                                var respContent = await response.Content.ReadAsStringAsync();
-                                Console.WriteLine($"Factura {facturaBase.Factura_Numero} => {respContent}");
-                                JObject resp = JObject.Parse(respContent);
-
-                                bool received = resp.Value<bool>("received");
-                                bool accepted = resp.Value<bool>("accepted");
-                                bool authorized = resp.Value<bool>("authorized");
-
-
-
-                                if (received && accepted && authorized)
-                                {
-                                    string dateSentToDgi = resp.Value<string>("dateSentToDgi");
-                                    string msg = resp.Value<string>("msg");
-                                    string xmlFeSigned = resp.Value<string>("xmlFeSigned");
-                                    string qrB64 = resp.Value<string>("qrB64");
-
-                                    XDocument xmlDoc = XDocument.Parse(xmlFeSigned);
-
-                                    // Obtener primeros 6 caracteres de SignatureValue esto por normatividad
-                                    XNamespace ds = "http://www.w3.org/2000/09/xmldsig#";
-                                    string signatureValue = xmlDoc.Descendants(ds + "SignatureValue").FirstOrDefault()?.Value ?? "";
-                                    string signatureFirst6 = signatureValue.Length >= 6 ? signatureValue.Substring(0, 6) : signatureValue;
-
-                                    string fechaVencimiento = xmlDoc.Descendants("FechaVencimientoSecuencia").FirstOrDefault()?.Value ?? "";
-
-
-                                    _logger.LogInformation("Generando factura en PDF...");
-
-                                    // Leer el logo
-                                    var logoPath = Path.Combine(AppContext.BaseDirectory, "img", "logo.png");
-                                    var logoBytes = File.ReadAllBytes(logoPath);
-
-
-                                    var facturaData = new FacturaData
+                                    else if (facturaBase.Tipo_Factura == "CR" || facturaBase.Tipo_Factura == "DB")
                                     {
-                                        Logo = logoBytes,
-                                        Encabezado = facturaBase,
-                                        Items = items_fact,
-                                        DateSentToDgi = dateSentToDgi,
-                                        SignatureFirst6 = signatureFirst6,
-                                        FechaVencimiento = fechaVencimiento,
-                                        QrB64 = qrB64
+                                        if(facturaBase.Tipo_Factura == "CR")
+                                        {
+                                            tipo_factura = "34";
+                                        }
+                                        else
+                                        {
+                                            tipo_factura = "33";
+                                        }
+                                       
+                                        docNumber = facturaBase.NCF;
+                                        invoiceNumber = facturaBase.Factura_Afectada_NC;
+
+                                        if(facturaBase.Factura_Afectada_NC.Substring(0,3) == "E44")
+                                        {
+                                            customerType = "";
+
+                                        }
+                                        else
+                                        {
+                                            customerType = "06";
+                                        }
+                                       
+                                        currency = "USD";
+                                        incoterm = "FOB";
+                                        destCountry = "US";
+                                        totValEst = total_conversion;
+                                        tax = 0;
+                                        invoiceNumberRefDate = facturaBase.fecha_factura_afectada;
+
+
+
+                                    }
+                                    else if (facturaBase.Tipo_Factura == "FR")
+                                    {
+                                        tipo_factura = "44";
+                                        docNumber = facturaBase.NCF;
+                                        customerType = "";
+                                        currency = "USD";
+                                        incoterm = "";
+                                        destCountry = "";
+                                        tax = 0;
+                                    }
+                                   
+
+                                    //CONSUTRUCCIÓN DE ARRAY PARA CONSTRUIR LA FACTURA
+
+                                    var items_fact = grupo.Select(linea => new ItemFactura
+                                    {
+                                        Linea_Numero = linea.Linea_Numero,
+                                        entrega_numero = linea.Entrega_Numero,
+                                        Cantidad_Enviada = linea.Cantidad_Enviada,
+                                        Precio_Unitario = linea.Precio_Unitario,
+                                        Producto_Codigo = linea.Producto_Codigo,
+                                        Producto_Descripcion = linea.Producto_Descripcion,
+                                        Cantidad_ordenada = linea.Cantidad_Ordenada,
+                                        Lote_Numero = linea.Lote_Numero,
+                                        Unidad_Medida = linea.Unidad_Medida,
+                                        Total_Factura = linea.Total_Factura,
+                                        Subtotal_Linea = linea.Subtotal_Linea
+
+
+
+                                    }).ToArray();
+
+
+                                    var itemsList = grupo
+                                    .Where(linea =>
+                                        !string.IsNullOrWhiteSpace(linea.Producto_Codigo) &&
+                                        linea.Producto_Codigo.Trim().Length > 0
+                                    )
+                                     .Select(linea => new ItemWebPOS
+                                     {
+                                         id = linea.Linea_Numero,
+                                         qty = linea.Cantidad_Enviada,
+                                         price = linea.Precio_Unitario,
+                                         code = linea.Producto_Codigo,
+                                         desc = linea.Producto_Descripcion,
+                                         itemClass = 0,
+                                         tax = tax,
+                                         comments = "",
+                                         damt = 0.00m
+                                     })
+                                     .ToList();
+
+                                    if (facturaBase.valor_flete > 0)
+                                    {
+                                        itemsList.Add(new ItemWebPOS
+                                        {
+                                            id = (itemsList.Count + 1).ToString(),
+                                            qty = 1,
+                                            price = facturaBase.valor_flete ?? 0,
+                                            code = "FLETE",
+                                            desc = "Flete",
+                                            itemClass = 0,
+                                            tax = tax,
+                                            comments = "",
+                                            damt = 0.00m
+                                        });
+                                    }
+
+                                    var items = itemsList.ToArray();
+
+                                  
+                                    var payload = new
+                                    {
+                                        fiscalDoc = new
+                                        {
+                                            companyLicCod = facturaBase.companyLicCod,
+                                            branchCod = facturaBase.branchCod,
+                                            posCod = facturaBase.posCod,
+                                            docType = tipo_factura,
+                                            docNumber = docNumber,
+                                            systemRef = facturaBase.Factura_Numero,
+                                            docNumberDueDate = DateTime.Parse(facturaBase.DateDue_Sec).ToString("yyyy-MM-dd"),
+                                            invoiceNumberRefDate = invoiceNumberRefDate,
+                                            //docNumberDueDate = "",
+                                            docDate = facturaBase.Factura_Fecha_Emision.ToString("yyyy-MM-dd"),
+                                            invoiceNumber = invoiceNumber,
+                                            customerName = facturaBase.Cliente_Nombre,
+                                            customerRUC = facturaBase.Cliente_Documento_Identidad,
+                                            customerType = customerType,
+                                            customerAddress = facturaBase.Cliente_Direccion1,
+                                            email = facturaBase.Cliente_Email,
+                                            currency = currency,
+                                            currencyRate = facturaBase.tasa_cambio,
+                                            fedo = new
+                                            {
+                                                taxMode = facturaBase.Indicador_TaxMode,
+                                                operMode = "01",
+                                                paymentType = 1,
+                                                incoterm = incoterm,
+                                                destCountry = destCountry,
+                                                totValEst = totValEst
+                                            },
+                                            items = items,
+                                            discount = new
+                                            {
+                                                perc = "0%",
+                                                amt = 0
+                                            },
+                                            payments = Array.Empty<object>(),
+                                            trailer = new[]
+                                            {
+                                                new { id = 1, value = "" },
+                                                new { id = 2, value = "" }
+                                                }
+                                        }
                                     };
 
 
 
-                                    // Crear el documento
-                                    var factura = new FacturaPDF(facturaData);
-                                    string folder = Path.Combine(AppContext.BaseDirectory, "Invoice_generate");
+                                
+                                    _logger.LogInformation("Consumiendo servicio de WebPos para enviar información de facturas...");
 
-                                    if (!Directory.Exists(folder))
+                                    // Enviar JSON
+                                    var json = JsonConvert.SerializeObject(payload, new JsonSerializerSettings
                                     {
-                                        Directory.CreateDirectory(folder);
-                                    }
+                                        NullValueHandling = NullValueHandling.Ignore
+                                    }); 
+                                    var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                                    string fileName = $"Factura_{facturaBase.Factura_Numero}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                                    _logger.LogInformation("JSON final que se enviará al servicio WebPos: {Json}", json);
 
-                                    // Ruta completa
-                                    string outputPath = Path.Combine(folder, fileName);
-
-
-                                    if (logoPath == null) throw new Exception("Logo no encontrado");
-
-                                    using (var stream = File.Create(outputPath))
+                                    var log = new FE_System_Log
                                     {
-                                        factura.GeneratePdf(stream);
-                                    }
-                                    if (!File.Exists(outputPath) || new FileInfo(outputPath).Length == 0)
+                                        Invoice = "",
+                                        Fecha = DateTime.Now,
+                                        Modulo = "JSON_GENERACION",
+                                        Mensaje = "JSON envio de datos",
+                                        StackTrace = json
+                                    };
+
+                                    await facturaController.InsertLog(log);
+
+                                    var response = await _httpClient.PostAsync(baseurl + "api/fedo/ak/v1/prod/SendFileToProcess/" + companyLicCod + "/" + ApiKey, content);
+
+                                    var respContent = await response.Content.ReadAsStringAsync();
+                                    Console.WriteLine($"Factura {facturaBase.Factura_Numero} => {respContent}");
+                                    JObject resp = JObject.Parse(respContent);
+
+                                    bool received = resp.Value<bool>("received");
+                                    bool accepted = resp.Value<bool>("accepted");
+                                    bool authorized = resp.Value<bool>("authorized");
+
+
+
+                                    if (received && accepted && authorized)
                                     {
-                                        throw new Exception("El PDF no se generó correctamente o está vacío");
+                                        string dateSentToDgi = resp.Value<string>("dateSentToDgi");
+                                        string msg = resp.Value<string>("msg");
+                                        string xmlFeSigned = resp.Value<string>("xmlFeSigned");
+                                        string qrB64 = resp.Value<string>("qrB64");
+
+                                        XDocument xmlDoc = XDocument.Parse(xmlFeSigned);
+
+                                        // Obtener primeros 6 caracteres de SignatureValue esto por normatividad
+                                        XNamespace ds = "http://www.w3.org/2000/09/xmldsig#";
+                                        string signatureValue = xmlDoc.Descendants(ds + "SignatureValue").FirstOrDefault()?.Value ?? "";
+                                        string signatureFirst6 = signatureValue.Length >= 6 ? signatureValue.Substring(0, 6) : signatureValue;
+
+                                        string fechaVencimiento = xmlDoc.Descendants("FechaVencimientoSecuencia").FirstOrDefault()?.Value ?? "";
+
+
+                                        _logger.LogInformation("Generando factura en PDF...");
+
+                                        // Leer el logo
+                                        var logoPath = Path.Combine(AppContext.BaseDirectory, "img", "logo.png");
+                                        var logoBytes = File.ReadAllBytes(logoPath);
+
+
+                                        var facturaData = new FacturaData
+                                        {
+                                            Logo = logoBytes,
+                                            Encabezado = facturaBase,
+                                            Items = items_fact,
+                                            DateSentToDgi = dateSentToDgi,
+                                            SignatureFirst6 = signatureFirst6,
+                                            FechaVencimiento = fechaVencimiento,
+                                            QrB64 = qrB64,
+                                            comentarios = facturaBase.comentarios
+                                        };
+
+
+                                        //INSERT CODIGO QR en BD
+
+                                        await facturaController.UpdateQRBase64(facturaBase.Factura_Numero,qrB64);
+
+
+                                        // Crear el documento
+                                        var factura = new FacturaPDF(facturaData);
+                                        string folder = Path.Combine(AppContext.BaseDirectory, "Invoice_generate");
+
+                                        if (!Directory.Exists(folder))
+                                        {
+                                            Directory.CreateDirectory(folder);
+                                        }
+
+                                        string fileName = $"Factura_{facturaBase.Factura_Numero}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+
+                                        // Ruta completa
+                                        string outputPath = Path.Combine(folder, fileName);
+
+
+                                        if (logoPath == null) throw new Exception("Logo no encontrado");
+
+                                        using (var stream = File.Create(outputPath))
+                                        {
+                                            factura.GeneratePdf(stream);
+                                        }
+                                        if (!File.Exists(outputPath) || new FileInfo(outputPath).Length == 0)
+                                        {
+                                            var log2 = new FE_System_Log
+                                            {
+                                                Invoice = "",
+                                                Fecha = DateTime.Now,
+                                                Modulo = "GeneracionPDF",
+                                                Mensaje = "El PDF no se generó correctamente o está vacío",
+                                                StackTrace = "El pdf no se generó correctamente" + facturaBase.Factura_Numero
+                                            };
+
+                                            await facturaController.InsertLog(log2);
+                                            throw new Exception("El PDF no se generó correctamente o está vacío");
+                                        }
+
+                                        _logger.LogInformation("Factura generada en: {path}", outputPath);
+
+                                        await facturaController.InsertResponseExit(facturaBase.Factura_Numero);
+
+
+
+
                                     }
+                                    else
+                                    {
 
-                                    _logger.LogInformation("Factura generada en: {path}", outputPath);
+                                        _logger.LogInformation("Insertando data de error por aprobación");
 
 
-                                   
+                                        int status = resp.Value<int>("status");
+                                        string msg = resp.Value<string>("msg");
+                                        string dgiResp = resp.Value<string>("dgiResp");
+                                        string received1 = resp.Value<string>("received");
+                                        string accepted1 = resp.Value<string>("accepted");
+
+
+
+                                        await facturaController.InsertResposeFail(dgiResp, received1, accepted1, status, msg, facturaBase.Factura_Numero);
+
+
+                                        string mensajeConcatenado = $"status : {status} + msg : {msg} + dgiResp : {dgiResp}";
+                                        var log3 = new FE_System_Log
+                                        {
+                                            Invoice = "",
+                                            Fecha = DateTime.Now,
+                                            Modulo = "AutorizaciónAPISendToFiLe",
+                                            Mensaje = "No se realizó la autorización de la factura" + facturaBase.Factura_Numero,
+                                            StackTrace = mensajeConcatenado
+                                        };
+
+                                        await facturaController.InsertLog(log3);
+                                        Console.WriteLine($"{mensajeConcatenado}");
+                                    }
                                 }
-                                else
+
+                            }
+
+                            if (facturasEstado5 != null && facturasEstado5.Any())
+                            {
+
+                                _logger.LogInformation("Iniciado a revisar facturas en estado 5");
+
+
+
+                                foreach (var grupo in facturasEstado5)
                                 {
-                                    int status = resp.Value<int>("status");
-                                    string msg = resp.Value<string>("msg");
-                                    string dgiResp = resp.Value<string>("dgiResp");
-                                    string received1 = resp.Value<string>("received");
-                                    string accepted1 = resp.Value<string>("accepted");
+                                    var facturaBase = grupo.First();
+                                    int tax = 0;
+
+                                    _logger.LogInformation("Factura: {factura} - NCF: {ncf}", facturaBase.Factura_Numero, facturaBase.NCF);
+
+
+                                    string COD_NFC = facturaBase.NCF;
+                                    string companyLicCod = facturaBase.companyLicCod;
+
+                                    _logger.LogInformation("Consultando GetResultFe ");
+
+                                    _httpClient.DefaultRequestHeaders.Clear();
+
+                                    // Agregar los headers requeridos
+                                    _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
+                                        "Content-Type", "application/json; charset=utf-8 Or application/xml"
+                                    );
+                                    _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
+                                        "Accept", "application/json or application/xml"
+                                    );
+
+                                    var response = await _httpClient.GetAsync(baseurl + "api/fedo/ak/v2/prod/GetResultFe/" + companyLicCod + "/" + ApiKey + "/" + COD_NFC);
+                                    var jsonResponse = await response.Content.ReadAsStringAsync();
+
+
+                                    dynamic dgiResp = null;
+
+                                    try
+                                    {
+                                        dgiResp = JsonConvert.DeserializeObject<dynamic>(jsonResponse);
+
+                                        if (dgiResp is string)
+                                        {
+                                            _logger.LogWarning($"API devolvió texto plano: {dgiResp}");
+
+                                            dgiResp = new
+                                            {
+                                                authorized = false,
+                                                message = dgiResp,
+                                                status = "Error" + dgiResp
+                                            };
+
+                                            var log = new FE_System_Log
+                                            {
+                                                Invoice = "",
+                                                Fecha = DateTime.Now,
+                                                Modulo = "JSON_GENERACION",
+                                                Mensaje = "JSON envio de datos",
+                                                StackTrace = "Error" + dgiResp
+                                            };
+
+                                            await facturaController.InsertLog(log);
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, $"Error al procesar JSON: {jsonResponse}");
+
+                                        // Valores por defecto para continuar
+                                        dgiResp = new
+                                        {
+                                            authorized = false,
+                                            message = ex.Message,
+                                            status = "Error" + dgiResp
+                                        };
+
+                                        var log = new FE_System_Log
+                                        {
+                                            Invoice = "",
+                                            Fecha = DateTime.Now,
+                                            Modulo = "JSON_GENERACION",
+                                            Mensaje = "JSON envio de datos",
+                                            StackTrace = "Error" + dgiResp
+                                        };
+
+                                        await facturaController.InsertLog(log);
+                                    }
+
+                                    bool authorized = dgiResp?.authorized ?? false;
+                                    string msg = dgiResp?.message ?? "Sin mensaje";
+                                    string status = dgiResp?.status ?? "Desconocido";
+
+                                    if (authorized)
+                                    {
+
+                                        _logger.LogInformation("Consultando GetQR ");
+
+                                        _httpClient.DefaultRequestHeaders.Clear();
+
+                                        // Agregar los headers requeridos
+                                        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
+                                            "Content-Type", "application/json; charset=utf-8 Or application/xml"
+                                        );
+                                        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
+                                            "Accept", "application/json or application/xml"
+                                        );
+
+                                        var response2 = await _httpClient.GetAsync(baseurl + "api/fedo/ak/v1/GetQR/" + companyLicCod + "/" + ApiKey + "/" + COD_NFC);
+                                        var jsonResponse2 = await response2.Content.ReadAsStringAsync();
+
+                                        var dgiResp2 = JsonConvert.DeserializeObject<dynamic>(jsonResponse2);
+
+                                        if (dgiResp2 != null)
+                                        {
+
+                                            string xmlFeSigned = dgiResp.Value<string>("xml");
+                                            string qrB64 = dgiResp2.Value<string>("qrb64");
+                                            string dateSentToDgi = dgiResp.Value<string>("dateRec");
+
+                                            _logger.LogInformation("construyendo información factura para PDF ");
+
+
+                                           
+
+                                            //CONSUTRUCCIÓN DE ARRAY PARA CONSTRUIR LA FACTURA
+
+                                            var items_fact = grupo.Select(linea => new ItemFactura
+                                            {
+                                                Linea_Numero = linea.Linea_Numero,
+                                                entrega_numero = linea.Entrega_Numero,
+                                                Cantidad_Enviada = linea.Cantidad_Enviada,
+                                                Precio_Unitario = linea.Precio_Unitario,
+                                                Producto_Codigo = linea.Producto_Codigo,
+                                                Producto_Descripcion = linea.Producto_Descripcion,
+                                                Cantidad_ordenada = linea.Cantidad_Ordenada,
+                                                Lote_Numero = linea.Lote_Numero,
+                                                Unidad_Medida = linea.Unidad_Medida,
+                                                Total_Factura = linea.Total_Factura,
+                                                Subtotal_Linea = linea.Subtotal_Linea
 
 
 
-                                    await facturaController.InsertResposeFail(dgiResp, received1, accepted1, status, msg, facturaBase.Factura_Numero);
+                                            }).ToArray();
 
 
-                                    string mensajeConcatenado = $"status : {status} + msg : {msg} + dgiResp : {dgiResp}";
-                                    Console.WriteLine($"{mensajeConcatenado}");
+                                           
+                                       
+                                            XDocument xmlDoc = XDocument.Parse(xmlFeSigned);
+
+                                            // Obtener primeros 6 caracteres de SignatureValue esto por normatividad
+                                            XNamespace ds = "http://www.w3.org/2000/09/xmldsig#";
+                                            string signatureValue = xmlDoc.Descendants(ds + "SignatureValue").FirstOrDefault()?.Value ?? "";
+                                            string signatureFirst6 = signatureValue.Length >= 6 ? signatureValue.Substring(0, 6) : signatureValue;
+
+                                            string fechaVencimiento = xmlDoc.Descendants("FechaVencimientoSecuencia").FirstOrDefault()?.Value ?? "";
+
+
+                                            _logger.LogInformation("Generando factura en PDF...");
+
+                                            // Leer el logo
+                                            var logoPath = Path.Combine(AppContext.BaseDirectory, "img", "logo.png");
+                                            var logoBytes = File.ReadAllBytes(logoPath);
+
+
+                                            var facturaData = new FacturaData
+                                            {
+                                                Logo = logoBytes,
+                                                Encabezado = facturaBase,
+                                                Items = items_fact,
+                                                DateSentToDgi = dateSentToDgi,
+                                                SignatureFirst6 = signatureFirst6,
+                                                FechaVencimiento = facturaBase.DateDue_Sec,
+                                                QrB64 = qrB64,
+                                                comentarios = facturaBase.comentarios
+                                            };
+
+                                            //ACTUALIZAR CODIGO QR EN BD
+
+                                            await facturaController.UpdateQRBase64(facturaBase.Factura_Numero, qrB64);
+
+
+                                            // Crear el documento
+                                            var factura = new FacturaPDF(facturaData);
+                                            string folder = Path.Combine(AppContext.BaseDirectory, "Invoice_generate");
+
+                                            if (!Directory.Exists(folder))
+                                            {
+                                                Directory.CreateDirectory(folder);
+                                            }
+
+                                            string fileName = $"Factura_{facturaBase.Factura_Numero}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+
+                                            // Ruta completa
+                                            string outputPath = Path.Combine(folder, fileName);
+
+
+                                            if (logoPath == null) throw new Exception("Logo no encontrado");
+
+                                            using (var stream = File.Create(outputPath))
+                                            {
+                                                factura.GeneratePdf(stream);
+                                            }
+                                            if (!File.Exists(outputPath) || new FileInfo(outputPath).Length == 0)
+                                            {
+                                                throw new Exception("El PDF no se generó correctamente o está vacío");
+                                            }
+
+                                            _logger.LogInformation("Factura generada en: {path}", outputPath);
+                                            await facturaController.InsertResponseExit(facturaBase.Factura_Numero);
+
+                                        };
+
+                                    }
+
+
+
+
+
                                 }
+
                             }
 
 
-                            
+                         
 
 
                         }
@@ -384,9 +732,8 @@ namespace WsIntegratedInvoicePAC
 
 
 
-              
-                        // Espera 2 minutos (120000 ms)
-                        await Task.Delay(TimeSpan.FromMinutes(2), stoppingToken);
+                        // Espera 30 SEGU (120000 ms)
+                        await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
                     }
                     catch (TaskCanceledException)
                     {

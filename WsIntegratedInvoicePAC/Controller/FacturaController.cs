@@ -54,5 +54,12 @@ namespace WsIntegratedInvoicePAC.Controller
 
         }
 
+
+        public async Task UpdateQRBase64(string nroFactura, string QRBase64)
+        {
+            await _repository.UpdateQRBase64(nroFactura, QRBase64);
+
+        }
+
     }
 }

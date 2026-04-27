@@ -70,6 +70,12 @@ namespace WsIntegratedInvoicePAC.Models
         public string? ACCT { get; set; }
         public string? DateDue_Sec { get; set; }
 
+        public decimal? valor_flete { get; set; }
+        public DateTime? fecha_factura_afectada { get; set; }
+        public string? Descripcion2 { get; set; }
+        public string? comentarios { get; set; }
+
+
 
     }
 }
