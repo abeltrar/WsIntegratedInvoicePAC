@@ -11,7 +11,6 @@ using WsIntegratedInvoicePAC.Models;
 
 namespace WsIntegratedInvoicePAC.ViewPDF
 {
-
     public class FacturaPDF : IDocument
     {
         private readonly byte[] _logo;
@@ -23,6 +22,12 @@ namespace WsIntegratedInvoicePAC.ViewPDF
         private readonly string _qrB64;
         private readonly string _comentarios;
 
+        // Border constants
+        private const float OUTER = 1f;
+        private const string OUTER_COLOR = "#000000";
+        private const float INNER = 0.5f;
+        private const string INNER_COLOR = "#A0A0A0";
+
         public FacturaPDF(FacturaData data)
         {
             _logo = data.Logo;
@@ -33,7 +38,6 @@ namespace WsIntegratedInvoicePAC.ViewPDF
             _fechaVencimiento = data.FechaVencimiento;
             _qrB64 = data.QrB64;
             _comentarios = data.comentarios;
-
         }
 
         public DocumentMetadata GetMetadata() => DocumentMetadata.Default;
@@ -44,494 +48,474 @@ namespace WsIntegratedInvoicePAC.ViewPDF
             {
                 page.Size(PageSizes.A4);
                 page.Margin(20);
-                page.DefaultTextStyle(x => x.FontFamily("Arial").FontSize(8).FontColor(Color.FromHex("#333333")));
+                page.DefaultTextStyle(x => x.FontFamily("Arial").FontSize(8).FontColor(Color.FromHex("#000000")));
 
                 page.Header().Column(headerCol =>
                 {
                     headerCol.Item().Element(ComposeHeader);
-                    headerCol.Item().Element(ComposeBillToShipTo);
-                    headerCol.Item().Element(ComposeInfoBlock);
+                    headerCol.Item().PaddingTop(6).Element(ComposeBillToShipTo);
+                    headerCol.Item().PaddingTop(4).Element(ComposeInfoBlock);
                 });
 
-                page.Content()
-                    .Column(col =>
-                    {
-                        col.Item().Element(ComposeContent);
-                    });
+                page.Content().PaddingTop(4).Element(ComposeDetailsTable);
 
-                page.Footer()
-                    .Element(ComposeFooter);
+                page.Footer().Element(ComposeFooter);
             });
         }
 
+        // ══════════════════════════════════════════════
+        //  SECTION 1 — Company header + Invoice box
+        // ══════════════════════════════════════════════
         void ComposeHeader(IContainer container)
         {
             container.Row(row =>
             {
-                row.RelativeColumn(1.5f).Row(headerLeftRow =>
+                row.RelativeColumn(1.6f).Row(lr =>
                 {
                     if (_logo != null && _logo.Length > 0)
-                        headerLeftRow.ConstantColumn(80).Image(_logo).FitArea();
+                        lr.ConstantColumn(75).Image(_logo).FitArea();
                     else
-                        headerLeftRow.ConstantColumn(80).Height(60).Text("B' LEATHER").Bold().FontSize(16);
+                        lr.ConstantColumn(75).Height(55).AlignMiddle().Text("B' LEATHER").Bold().FontSize(14);
 
-                    headerLeftRow.ConstantColumn(10);
+                    lr.ConstantColumn(8);
 
-                    headerLeftRow.RelativeColumn().Column(textCol =>
+                    lr.RelativeColumn().Column(tc =>
                     {
-                        textCol.Item().Height(5);
-                        textCol.Item().Text("B' LEATHER MANUFACTURING, INC.").Bold().FontSize(10);
-                        textCol.Item().Text("Parque Industrial y de Servicios Yaque, S.A.");
-                        textCol.Item().Text("Ave. 27 de Febrero esquina Calle 2. Ensanche Bermudez.");
-                        textCol.Item().Text("Santiago de los Caballeros, Dominican Republic 51091");
-                        textCol.Item().Text("Phone +1 (809) 575-7000");
-                        textCol.Item().Text("RNC 1-30-72334-6");
+                        tc.Item().Height(4);
+                        tc.Item().Text("B' LEATHER MANUFACTURING, INC.").Bold().FontSize(11);
+                        tc.Item().Text("Parque Industrial y de Servicios Yaque, S.A.").FontSize(8);
+                        tc.Item().Text("Ave. 27 de Febrero esquina Calle 2, Ensanche Bermudez").FontSize(8);
+                        tc.Item().Text("Santiago de los Caballeros, Dominican Republic 51091").FontSize(8);
+                        tc.Item().Text("Phone +1 (809) 575-7000").FontSize(8);
+                        tc.Item().Text("RNC 1-30-72334-6").FontSize(8);
                     });
                 });
 
-                row.RelativeColumn(1).Column(col =>
+                row.RelativeColumn(1f).Column(rc =>
                 {
-                    string nombre_factura = "";
-                    if (_encabezado.Tipo_Factura == "CU" || _encabezado.Tipo_Factura == "FR")
-                        nombre_factura = "INVOICE";
-                    else
-                        nombre_factura = "ELECTRONIC CREDIT NOTE";
+                    string titulo = (_encabezado.Tipo_Factura == "CU" || _encabezado.Tipo_Factura == "FR")
+                        ? "INVOICE" : "ELECTRONIC CREDIT NOTE";
 
-                    col.Item().AlignCenter().Text(nombre_factura).Bold().FontSize(14);
-                    col.Item().PaddingBottom(2);
+                    rc.Item().AlignCenter().Text(titulo).Bold().FontSize(16);
+                    rc.Item().PaddingTop(3);
 
-                  
-                    col.Item().BorderColor(Color.FromHex("#000000")).BorderBottom(0.5f).Table(table =>
-                    {
-                        table.ColumnsDefinition(columns =>
+                    rc.Item()
+                        .BorderColor(Color.FromHex(OUTER_COLOR))
+                        .BorderTop(OUTER).BorderBottom(OUTER).BorderLeft(OUTER).BorderRight(OUTER)
+                        .Table(t =>
                         {
-                            columns.RelativeColumn();
-                            columns.RelativeColumn();
-                            columns.RelativeColumn();
-                        });
-
-                        table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).BorderRight(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(2).Text("INVOICE #").Bold();
-                        table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).BorderRight(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(2).Text("INVOICE DATE").Bold();
-                        table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(2).Text("PAGE").Bold();
-
-                        table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).BorderRight(0.5f).Padding(2).Text(_encabezado.Factura_Numero);
-                        table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).BorderRight(0.5f).Padding(2).Text(_encabezado.Factura_Fecha_Emision.ToString("dd/MM/yyyy"));
-                        table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).Padding(2).Text(x =>
-                        {
-                            x.CurrentPageNumber();
-                            x.Span(" of ");
-                            x.TotalPages();
-                        });
-
-                        if (_encabezado.Tipo_Factura == "CU" || _encabezado.Tipo_Factura == "FR")
-                        {
-                            table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).BorderRight(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(2).Text("NCF #").Bold();
-                            table.Cell().ColumnSpan(2).BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(2).Text("VALID UNTIL").Bold();
-
-                            // Fila 4: Valores NCF / Valid Until
-                            table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderRight(0.5f).Padding(2).Text(_encabezado.NCF);
-                            table.Cell().ColumnSpan(2).Padding(2).Text(_fechaVencimiento);
-                        }
-                        else if (_encabezado.Tipo_Factura == "CR")
-                        {
-                            table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).BorderRight(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(2).Text("NCF #").Bold();
-                            table.Cell().ColumnSpan(2).BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(2).Text("NCF MODIFIED #").Bold();
-
-                            table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderRight(0.5f).Padding(2).Text(_encabezado.NCF);
-                            table.Cell().ColumnSpan(2).Padding(2).Column(c =>
+                            t.ColumnsDefinition(c =>
                             {
-                                c.Item().Text(_encabezado.Factura_Afectada_NC);
-                                c.Item().Text("Cancels the modified NCF").Bold().FontSize(7);
+                                c.RelativeColumn();
+                                c.RelativeColumn();
+                                c.RelativeColumn();
                             });
-                        }
-                    });
+
+                            t.Cell().Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).BorderRight(INNER).Padding(2).AlignCenter().Text("INVOICE #").Bold().FontSize(8);
+                            t.Cell().Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).BorderRight(INNER).Padding(2).AlignCenter().Text("INVOICE DATE").Bold().FontSize(8);
+                            t.Cell().Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).Padding(2).AlignCenter().Text("PAGE").Bold().FontSize(8);
+
+                            t.Cell().BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).BorderRight(INNER).Padding(2).AlignCenter().Text(_encabezado.Factura_Numero).FontSize(8);
+                            t.Cell().BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).BorderRight(INNER).Padding(2).AlignCenter().Text(_encabezado.Factura_Fecha_Emision.ToString("dd/MM/yyyy")).FontSize(8);
+                            t.Cell().BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).Padding(2).AlignCenter().Text(x =>
+                            {
+                                x.CurrentPageNumber().Style(TextStyle.Default.FontSize(8));
+                                x.Span(" of ").Style(TextStyle.Default.FontSize(8));
+                                x.TotalPages().Style(TextStyle.Default.FontSize(8));
+                            });
+
+                            if (_encabezado.Tipo_Factura == "CU" || _encabezado.Tipo_Factura == "FR")
+                            {
+                                t.Cell().Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).BorderRight(INNER).Padding(2).AlignCenter().Text("NCF #").Bold().FontSize(8);
+                                t.Cell().ColumnSpan(2).Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).Padding(2).AlignCenter().Text("VALID UNTIL").Bold().FontSize(8);
+                                t.Cell().BorderColor(Color.FromHex(INNER_COLOR)).BorderRight(INNER).Padding(2).AlignCenter().Text(_encabezado.NCF).FontSize(8);
+                                t.Cell().ColumnSpan(2).Padding(2).AlignCenter().Text(_fechaVencimiento).FontSize(8);
+                            }
+                            else if (_encabezado.Tipo_Factura == "CR")
+                            {
+                                t.Cell().Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).BorderRight(INNER).Padding(2).AlignCenter().Text("NCF #").Bold().FontSize(8);
+                                t.Cell().ColumnSpan(2).Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).Padding(2).AlignCenter().Text("NCF MODIFIED #").Bold().FontSize(8);
+                                t.Cell().BorderColor(Color.FromHex(INNER_COLOR)).BorderRight(INNER).Padding(2).AlignCenter().Text(_encabezado.NCF).FontSize(8);
+                                t.Cell().ColumnSpan(2).Padding(2).AlignCenter().Column(c =>
+                                {
+                                    c.Item().Text(_encabezado.Factura_Afectada_NC).FontSize(8);
+                                    c.Item().Text("Cancels the modified NCF").Bold().FontSize(7);
+                                });
+                            }
+                        });
                 });
             });
         }
 
-        void ComposeContent(IContainer container)
-        {
-            container
-            .PaddingBottom(0) 
-            .BorderColor(Color.FromHex("#A0A0A0"))
-            .BorderBottom(0.5f) 
-            .Element(ComposeDetailsTable);
-        }
-
+        // ══════════════════════════════════════════════
+        //  SECTION 2 — Ship To / Bill To
+        // ══════════════════════════════════════════════
         void ComposeBillToShipTo(IContainer container)
         {
             container.Row(row =>
             {
-                row.RelativeColumn().Padding(5).Column(c =>
+                row.RelativeColumn().Padding(4).Column(c =>
                 {
-                    c.Item().Text("SHIP TO:").Bold();
-                    c.Item().Text(_encabezado.Cliente_Nombre).Bold();
-                    c.Item().Text(_encabezado.Direccion_Envio1);
-                    c.Item().Text(_encabezado.Direccion_Envio2);
-                    c.Item().Text("TAX ID");
+                    c.Item().Text("SHIP TO:").Bold().FontSize(8);
+                    c.Item().Text(_encabezado.Cliente_Nombre).Bold().FontSize(8);
+                    c.Item().Text(_encabezado.Direccion_Envio1).FontSize(8);
+                    c.Item().Text(_encabezado.Direccion_Envio2).FontSize(8);
                 });
                 row.ConstantColumn(10);
-                row.RelativeColumn().Padding(5).Column(c =>
+                row.RelativeColumn().Padding(4).Column(c =>
                 {
-                    c.Item().Text("BILL TO:").Bold();
-                    c.Item().Text(_encabezado.Cliente_Nombre).Bold();
-                    c.Item().Text(_encabezado.Cliente_Direccion1);
-                    c.Item().Text(_encabezado.Cliente_Direccion2);
-                    c.Item().Text("TAX ID");
+                    c.Item().Text("BILL TO:").Bold().FontSize(8);
+                    c.Item().Text(_encabezado.Cliente_Nombre).Bold().FontSize(8);
+                    c.Item().Text(_encabezado.Cliente_Direccion1).FontSize(8);
+                    c.Item().Text(_encabezado.Cliente_Direccion2).FontSize(8);
                 });
             });
         }
 
-        void ComposeInfoBar1(IContainer container)
-        {
-            container.Table(table =>
-            {
-                table.ColumnsDefinition(columns =>
-                {
-                    columns.RelativeColumn();
-                    columns.RelativeColumn();
-                    columns.RelativeColumn();
-                    columns.RelativeColumn();
-                });
-
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).BorderRight(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(3).AlignCenter().Text("CUSTOMER PO NUMBER").Bold();
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).BorderRight(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(3).AlignCenter().Text("PAYMENT TERMS").Bold();
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).BorderRight(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(3).AlignCenter().Text("SHIP VIA").Bold();
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(3).AlignCenter().Text("FOB POINT").Bold();
-
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderRight(0.5f).Padding(3).AlignCenter().Text(_encabezado.Orden_Compra_Cliente);
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderRight(0.5f).Padding(3).AlignCenter().Text(_encabezado.Condiciones_Pago);
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderRight(0.5f).Padding(3).AlignCenter().Text(_encabezado.Metodo_Envio);
-                table.Cell().Padding(3).AlignCenter().Text(_encabezado.Punto_Entrega);
-            });
-        }
-
-        void ComposeInfoBar2(IContainer container)
-        {
-            container.BorderColor(Color.FromHex("#A0A0A0")).BorderTop(0.5f).Table(table =>
-            {
-                table.ColumnsDefinition(columns =>
-                {
-                    columns.RelativeColumn(2f);
-                    columns.RelativeColumn(2f);
-                    columns.RelativeColumn(1.5f);
-                    columns.RelativeColumn(1.5f);
-                    columns.RelativeColumn(1f);
-                });
-
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).BorderRight(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(3).AlignCenter().Text("ORDERED BY").Bold();
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).BorderRight(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(3).AlignCenter().Text("SALES REPRESENTATIVE").Bold();
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).BorderRight(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(3).AlignCenter().Text("OUR ORDER NUMBER").Bold();
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).BorderRight(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(3).AlignCenter().Text("ORDER DATE").Bold();
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).Background(Color.FromHex("#D9D9D9")).Padding(3).AlignCenter().Text("CUSTOMER ID").Bold();
-
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderRight(0.5f).Padding(3).AlignCenter().Text(_encabezado.Solicitado_Por);
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderRight(0.5f).Padding(3).AlignCenter().Text("");
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderRight(0.5f).Padding(3).AlignCenter().Text(_encabezado.Orden_Numero);
-                table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderRight(0.5f).Padding(3).AlignCenter().Text(_encabezado.Orden_Fecha.ToString("MM/dd/yyyy"));
-                table.Cell().Padding(3).AlignCenter().Text(_encabezado.Cliente_Codigo);
-            });
-        }
-
+        // ══════════════════════════════════════════════
+        //  SECTION 3 — Info bars
+        // ══════════════════════════════════════════════
         void ComposeInfoBlock(IContainer container)
         {
-            container.BorderColor(Color.FromHex("#A0A0A0"))
-             .BorderTop(0.5f).BorderBottom(0.5f).BorderLeft(0.5f).BorderRight(0.5f)
-             .Column(col =>
-             {
-                col.Spacing(0);
-                col.Item().Element(ComposeInfoBar1);
-                col.Item().Element(ComposeInfoBar2);
-             });
+            container
+                .BorderColor(Color.FromHex(OUTER_COLOR))
+                .BorderTop(OUTER).BorderBottom(OUTER).BorderLeft(OUTER).BorderRight(OUTER)
+                .Column(col =>
+                {
+                    col.Spacing(0);
+
+                    col.Item().Table(t =>
+                    {
+                        t.ColumnsDefinition(c =>
+                        {
+                            c.RelativeColumn();
+                            c.RelativeColumn();
+                            c.RelativeColumn();
+                            c.RelativeColumn();
+                        });
+
+                        t.Cell().Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).BorderRight(INNER).Padding(3).AlignCenter().Text("CUSTOMER PO NUMBER").Bold().FontSize(8);
+                        t.Cell().Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).BorderRight(INNER).Padding(3).AlignCenter().Text("PAYMENT TERMS").Bold().FontSize(8);
+                        t.Cell().Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).BorderRight(INNER).Padding(3).AlignCenter().Text("SHIP VIA").Bold().FontSize(8);
+                        t.Cell().Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).Padding(3).AlignCenter().Text("FOB POINT").Bold().FontSize(8);
+
+                        t.Cell().BorderColor(Color.FromHex(INNER_COLOR)).BorderRight(INNER).Padding(3).AlignCenter().Text(_encabezado.Orden_Compra_Cliente).FontSize(8);
+                        t.Cell().BorderColor(Color.FromHex(INNER_COLOR)).BorderRight(INNER).Padding(3).AlignCenter().Text(_encabezado.Condiciones_Pago).FontSize(8);
+                        t.Cell().BorderColor(Color.FromHex(INNER_COLOR)).BorderRight(INNER).Padding(3).AlignCenter().Text(_encabezado.Metodo_Envio).FontSize(8);
+                        t.Cell().Padding(3).AlignCenter().Text(_encabezado.Punto_Entrega).FontSize(8);
+                    });
+
+                    col.Item().BorderColor(Color.FromHex(INNER_COLOR)).BorderTop(INNER).Table(t =>
+                    {
+                        t.ColumnsDefinition(c =>
+                        {
+                            c.RelativeColumn(2f);
+                            c.RelativeColumn(2f);
+                            c.RelativeColumn(1.5f);
+                            c.RelativeColumn(1.5f);
+                            c.RelativeColumn(1f);
+                        });
+
+                        t.Cell().Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).BorderRight(INNER).Padding(3).AlignCenter().Text("ORDERED BY").Bold().FontSize(8);
+                        t.Cell().Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).BorderRight(INNER).Padding(3).AlignCenter().Text("SALES REPRESENTATIVE").Bold().FontSize(8);
+                        t.Cell().Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).BorderRight(INNER).Padding(3).AlignCenter().Text("OUR ORDER NUMBER").Bold().FontSize(8);
+                        t.Cell().Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).BorderRight(INNER).Padding(3).AlignCenter().Text("ORDER DATE").Bold().FontSize(8);
+                        t.Cell().Background(Color.FromHex("#D9D9D9")).BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER).Padding(3).AlignCenter().Text("CUSTOMER ID").Bold().FontSize(8);
+
+                        t.Cell().BorderColor(Color.FromHex(INNER_COLOR)).BorderRight(INNER).Padding(3).AlignCenter().Text(_encabezado.Solicitado_Por).FontSize(8);
+                        t.Cell().BorderColor(Color.FromHex(INNER_COLOR)).BorderRight(INNER).Padding(3).AlignCenter().Text("").FontSize(8);
+                        t.Cell().BorderColor(Color.FromHex(INNER_COLOR)).BorderRight(INNER).Padding(3).AlignCenter().Text(_encabezado.Orden_Numero).FontSize(8);
+                        t.Cell().BorderColor(Color.FromHex(INNER_COLOR)).BorderRight(INNER).Padding(3).AlignCenter().Text(_encabezado.Orden_Fecha.ToString("MM/dd/yyyy")).FontSize(8);
+                        t.Cell().Padding(3).AlignCenter().Text(_encabezado.Cliente_Codigo).FontSize(8);
+                    });
+                });
         }
 
+        // ══════════════════════════════════════════════
+        //  SECTION 4+5 — ONE unified table: header rows + data rows
+        // ══════════════════════════════════════════════
         void ComposeDetailsTable(IContainer container)
         {
-            container.Table(table =>
-            {
-         
-                table.ColumnsDefinition(columns =>
-                {
-                    columns.ConstantColumn(20);   
-                    columns.ConstantColumn(20);   
-                    columns.RelativeColumn(1.2f); 
-                    columns.RelativeColumn(2f);   
-                    columns.RelativeColumn(0.9f); 
-                    columns.RelativeColumn(0.9f); 
-                    columns.ConstantColumn(28);  
-                    columns.RelativeColumn(0.9f); 
-                    columns.RelativeColumn(1f);  
-                });
-
-                table.Header(header =>
-                {
-                    static IContainer HeaderCellStyle(IContainer c) =>
-                        c.BorderColor(Color.FromHex("#A0A0A0"))
-                         .BorderTop(0.5f).BorderBottom(0.5f).BorderLeft(0.5f).BorderRight(0.5f)
-                         .Background(Color.FromHex("#D9D9D9")).Padding(3).AlignCenter();
-
-                    header.Cell().RowSpan(2).Element(HeaderCellStyle).Text("LN").Bold();
-                    header.Cell().RowSpan(2).Element(HeaderCellStyle).Text("DL").Bold();
-                    header.Cell().Element(HeaderCellStyle).Text("PART NUMBER").Bold();
-                    header.Cell().Element(HeaderCellStyle).Text("DESCRIPTION").Bold();
-                    header.Cell().ColumnSpan(2).Element(HeaderCellStyle).Text("QUANTITY").Bold();
-                    header.Cell().RowSpan(2).Element(HeaderCellStyle).Text("UOM").Bold();
-                    header.Cell().RowSpan(2).Element(HeaderCellStyle).Text("UNIT PRICE").Bold();
-                    header.Cell().RowSpan(2).Element(HeaderCellStyle).Text("EXTENDED PRICE").Bold();
-
-                    header.Cell().Element(HeaderCellStyle).Text("LOT NUMBER").Bold();
-                    header.Cell().Element(HeaderCellStyle).Text("NOTES").Bold();
-                    header.Cell().Element(HeaderCellStyle).Text("ORDERED").Bold();
-                    header.Cell().Element(HeaderCellStyle).Text("SHIPPED").Bold();
-                });
-
-                var culture = new CultureInfo("en-US");
-
-                foreach (var item in _items.OrderBy(x => int.TryParse(x.Linea_Numero, out var n) ? n : 0))
-
-                {
-                    table.Cell().BorderColor(Color.FromHex("#A0A0A0"))
-                         .BorderTop(0.5f).BorderBottom(0.5f).BorderLeft(0.5f).BorderRight(0.5f)
-                         .Padding(3).AlignCenter().AlignMiddle().Text(item.Linea_Numero);
-                    table.Cell().BorderColor(Color.FromHex("#A0A0A0"))
-                     .BorderTop(0.5f).BorderBottom(0.5f).BorderLeft(0.5f).BorderRight(0.5f)
-                     .Padding(3).AlignCenter().AlignMiddle().Text(item.entrega_numero);
-
-                    table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderTop(0.5f).BorderBottom(0.5f).BorderLeft(0.5f).BorderRight(0.5f).Padding(3).Padding(3).Column(column =>
-                    {
-                        column.Item().Text(item.Producto_Codigo);
-                        var lotes = item.Lote_Numero?.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                        if (lotes != null)
-                        {
-                            foreach (var lote in lotes)
-                            {
-                                column.Item().PaddingLeft(10).Text("LOT: " + lote.Replace("LOT", "").Replace("Lot", "").Trim().TrimStart(':').Trim());
-
-                            }
-                        }
-                    });
-
-                    table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderTop(0.5f).BorderBottom(0.5f).BorderLeft(0.5f).BorderRight(0.5f).Padding(3).Padding(3).Column(column =>
-                    {
-
-                        column.Item().Text(item.Producto_Descripcion);
-                        if (!string.IsNullOrWhiteSpace(item.Descripcion2))
-                            column.Item().Text(item.Descripcion2).FontSize(7).FontColor(Color.FromHex("#666666"));
-
-                    });
-
-                    table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderTop(0.5f).BorderBottom(0.5f).BorderLeft(0.5f).BorderRight(0.5f).Padding(3).Padding(3).AlignRight().AlignMiddle().Text(item.Cantidad_ordenada.ToString("N2", culture));
-                    table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderTop(0.5f).BorderBottom(0.5f).BorderLeft(0.5f).BorderRight(0.5f).Padding(3).Padding(3).AlignRight().AlignMiddle().Text(item.Cantidad_Enviada.ToString("N2", culture));
-                    table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderTop(0.5f).BorderBottom(0.5f).BorderLeft(0.5f).BorderRight(0.5f).Padding(3).Padding(3).AlignCenter().AlignMiddle().Text(item.Unidad_Medida);
-
-                    table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderTop(0.5f).BorderBottom(0.5f).BorderLeft(0.5f).BorderRight(0.5f).Padding(3).Padding(3).AlignMiddle().Row(r =>
-                    {
-              
-                        r.RelativeColumn().AlignCenter().Text(item.Precio_Unitario.ToString("N2", culture));
-                    });
-
-                    table.Cell().BorderColor(Color.FromHex("#A0A0A0")).BorderTop(0.5f).BorderBottom(0.5f).BorderLeft(0.5f).BorderRight(0.5f).Padding(3).Padding(3).AlignMiddle().Row(r =>
-                    {
-                       
-                        r.RelativeColumn().AlignCenter().Text(item.Subtotal_Linea.ToString("N2", culture));
-                    });
-                }
-
-
-                for (int j = 0; j < 9; j++)
-                {
-                    var cell = table.Cell().ExtendVertical().BorderColor(Color.FromHex("#A0A0A0")).BorderLeft(0.5f);
-                    if (j == 8)
-                        cell.BorderColor(Color.FromHex("#A0A0A0")).BorderRight(0.5f);
-                }
-            });
-        }
-
-
-        void ComposeNotes(IContainer container)
-        {
             container
-                .BorderColor(Color.FromHex("#A0A0A0"))
-                .BorderTop(0.5f).BorderBottom(0.5f)
-                .BorderLeft(0.5f).BorderRight(0.5f)
+                .BorderColor(Color.FromHex(OUTER_COLOR))
+                .BorderTop(OUTER).BorderLeft(OUTER).BorderRight(OUTER)
                 .Table(table =>
                 {
-                    table.ColumnsDefinition(columns =>
+                    table.ColumnsDefinition(c =>
                     {
-                        columns.ConstantColumn(45);  
-                        columns.RelativeColumn();    
+                        c.ConstantColumn(18);    // LN
+                        c.ConstantColumn(18);    // DL
+                        c.RelativeColumn(1.2f);  // PART NUMBER / LOT NUMBER
+                        c.RelativeColumn(2.2f);  // DESCRIPTION / NOTES
+                        c.RelativeColumn(0.9f);  // ORDERED
+                        c.RelativeColumn(0.9f);  // SHIPPED
+                        c.ConstantColumn(40);    // UOM
+                        c.RelativeColumn(1f);    // UNIT PRICE
+                        c.RelativeColumn(1f);    // EXTENDED PRICE
                     });
 
-                    table.Cell()
-                        .Background(Color.FromHex("#D9D9D9"))
-                        .BorderColor(Color.FromHex("#A0A0A0")).BorderRight(0.5f)
-                        .Padding(3)
-                        .Text("NOTES:").Bold();
+                    // ── Header — 2 rows, repeats on every page ──────────────────
+                    table.Header(header =>
+                    {
+                        IContainer H(IContainer c) =>
+                            c.Background(Color.FromHex("#D9D9D9"))
+                             .BorderColor(Color.FromHex(INNER_COLOR))
+                             .BorderTop(INNER).BorderBottom(INNER).BorderLeft(INNER).BorderRight(INNER)
+                             .Padding(3).AlignCenter().AlignMiddle();
 
-                    table.Cell()
-                        .Padding(3)
-                        .Text(!string.IsNullOrWhiteSpace(_comentarios) ? _comentarios : " ");
+                        header.Cell().RowSpan(2).Element(H).Text("LN").Bold().FontSize(8);
+                        header.Cell().RowSpan(2).Element(H).Text("DL").Bold().FontSize(8);
+                        header.Cell().Element(H).Text("PART NUMBER").Bold().FontSize(8);
+                        header.Cell().Element(H).Text("DESCRIPTION").Bold().FontSize(8);
+                        header.Cell().ColumnSpan(2).Element(H).Text("QUANTITY").Bold().FontSize(8);
+                        header.Cell().RowSpan(2).Element(H).Text("UOM").Bold().FontSize(8);
+                        header.Cell().RowSpan(2).Element(H).Text("UNIT PRICE").Bold().FontSize(8);
+                        header.Cell().RowSpan(2).Element(H).Text("EXTENDED PRICE").Bold().FontSize(8);
+
+                        header.Cell().Element(H).Text("LOT NUMBER").Bold().FontSize(8);
+                        header.Cell().Element(H).Text("NOTES").Bold().FontSize(8);
+                        header.Cell().Element(H).Text("ORDERED").Bold().FontSize(8);
+                        header.Cell().Element(H).Text("SHIPPED").Bold().FontSize(8);
+                    });
+
+                    // ── Data rows ───────────────────────────────────────────────
+                    var culture = new CultureInfo("en-US");
+
+                    IContainer D(IContainer c) =>
+                        c.BorderColor(Color.FromHex(INNER_COLOR))
+                         .BorderTop(INNER).BorderBottom(INNER).BorderLeft(INNER).BorderRight(INNER)
+                         .Padding(3);
+
+                    foreach (var item in _items.OrderBy(x => int.TryParse(x.Linea_Numero, out var n) ? n : 0))
+                    {
+                        table.Cell().Element(D).AlignCenter().AlignMiddle()
+                            .Text(item.Linea_Numero).FontSize(8);
+
+                        table.Cell().Element(D).AlignCenter().AlignMiddle()
+                            .Text(item.entrega_numero).FontSize(8);
+
+                        table.Cell().Element(D).Column(col =>
+                        {
+                            col.Item().Text(item.Producto_Codigo).FontSize(8);
+                            var lotes = item.Lote_Numero?.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            if (lotes != null)
+                                foreach (var lote in lotes)
+                                {
+                                    var clean = lote.Replace("LOT", "").Replace("Lot", "")
+                                                    .Trim().TrimStart(':').Trim();
+                                    col.Item().PaddingLeft(6)
+                                        .Text("LOT: " + clean)
+                                        .FontSize(7).FontColor(Color.FromHex("#555555"));
+                                }
+                        });
+
+                        table.Cell().Element(D).Column(col =>
+                        {
+                            col.Item().Text(item.Producto_Descripcion).FontSize(8);
+                            if (!string.IsNullOrWhiteSpace(item.Descripcion2))
+                                col.Item().Text(item.Descripcion2)
+                                    .FontSize(7).FontColor(Color.FromHex("#555555"));
+                        });
+
+                        table.Cell().Element(D).AlignRight().AlignMiddle()
+                            .Text(item.Cantidad_ordenada.ToString("N2", culture)).FontSize(8);
+
+                        table.Cell().Element(D).AlignRight().AlignMiddle()
+                            .Text(item.Cantidad_Enviada.ToString("N2", culture)).FontSize(8);
+
+                        table.Cell().Element(D).AlignCenter().AlignMiddle()
+                            .Text(item.Unidad_Medida).FontSize(8);
+
+                        table.Cell().Element(D).AlignMiddle().AlignCenter().Text(t =>
+                        {
+                            t.Span("US$ ").FontSize(7).FontColor(Color.FromHex("#555555"));
+                            t.Span(item.Precio_Unitario.ToString("N2", culture)).FontSize(8);
+                        });
+
+                        table.Cell().Element(D).AlignMiddle().AlignCenter().Text(t =>
+                        {
+                            t.Span("US$ ").FontSize(7).FontColor(Color.FromHex("#555555"));
+                            t.Span(item.Subtotal_Linea.ToString("N2", culture)).FontSize(8);
+                        });
+                    }
+
+                    // Filler cells — extiende líneas verticales al fondo (última página)
+                    for (int j = 0; j < 9; j++)
+                    {
+                        var cell = table.Cell().ExtendVertical()
+                                       .BorderColor(Color.FromHex(INNER_COLOR)).BorderLeft(INNER);
+                        if (j == 8)
+                            cell.BorderColor(Color.FromHex(INNER_COLOR)).BorderRight(INNER);
+                    }
+
+                    // Footer de tabla: línea de cierre en CADA página (1px negro = borde)
+                    table.Footer(footer =>
+                    {
+                        for (int j = 0; j < 9; j++)
+                            footer.Cell()
+                                .Background(Color.FromHex(OUTER_COLOR))
+                                .Height(OUTER);
+                    });
                 });
         }
 
+        // ══════════════════════════════════════════════
+        //  FOOTER — Notes + QR + Totales + Payment
+        // ══════════════════════════════════════════════
         void ComposeFooter(IContainer container)
         {
             container.Column(col =>
             {
-
-                col.Item().PaddingTop(5).Element(ComposeNotes);
+                col.Item().PaddingTop(4).Element(ComposeNotes);
 
                 col.Item().PaddingTop(5).Row(mainRow =>
                 {
-                    mainRow.ConstantColumn(120).Column(qrCol =>
+                    mainRow.ConstantColumn(110).Column(qrCol =>
                     {
                         qrCol.Item()
-                            .BorderColor(Color.FromHex("#A0A0A0"))
-                            .BorderTop(0.5f).BorderBottom(0.5f)
-                            .BorderLeft(0.5f).BorderRight(0.5f)
-                            .Padding(2)                    // padding mínimo, solo 3
-                            .Image(Convert.FromBase64String(_qrB64))
-                            .FitArea();                    // ocupa todo el espacio disponible del contenedor
+                            .Width(100)
+                            .Image(Convert.FromBase64String(_qrB64)).FitWidth();
 
-                        qrCol.Item().PaddingTop(4).AlignLeft()
-                            .Text($"Security Code: {_signatureFirst6}").FontSize(8);
-                        qrCol.Item().AlignLeft()
-                            .Text("Digital Signature Date:").FontSize(8);
-                        qrCol.Item().AlignLeft()
-                            .Text(_dateSentToDgi).FontSize(8);
+                        qrCol.Item().PaddingTop(4).Text($"Security Code: {_signatureFirst6}").FontSize(7);
+                        qrCol.Item().Text("Digital Signature Date:").FontSize(7);
+                        qrCol.Item().Text(_dateSentToDgi).FontSize(7);
                     });
 
-                    // Columna derecha: Totales arriba + Payment Instructions abajo
-                    mainRow.RelativeColumn().Column(rightCol =>
+                    mainRow.RelativeColumn();
+
+                    mainRow.ConstantColumn(300).Column(rightCol =>
                     {
-                        // Totales
-                        rightCol.Item().AlignRight().Element(ComposeTotals);
-
-                        // Payment Instructions
-                        rightCol.Item().PaddingTop(5).AlignRight()
-                            .BorderColor(Color.FromHex("#A0A0A0"))
-                            .BorderTop(0.5f).BorderBottom(0.5f)
-                            .BorderLeft(0.5f).BorderRight(0.5f)
-                            .Table(payTable =>
-                            {
-                                payTable.ColumnsDefinition(cols =>
-                                {
-                                    cols.ConstantColumn(105);
-                                    cols.ConstantColumn(195);
-                                });
-
-                                static IContainer PayHeaderStyle(IContainer c) =>
-                                    c.BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f).Padding(3);
-                                static IContainer PayLabelStyle(IContainer c) =>
-                                    c.BorderColor(Color.FromHex("#A0A0A0")).BorderRight(0.5f).Padding(3);
-                                static IContainer PayValueStyle(IContainer c) =>
-                                    c.Padding(3);
-
-                                payTable.Cell().ColumnSpan(2).Element(PayHeaderStyle)
-                                    .Text("PAYMENT INSTRUCTIONS:").Bold().FontSize(8);
-
-                                payTable.Cell().Element(PayLabelStyle).Text("ACCOUNT NAME:").Bold().FontSize(8);
-                                payTable.Cell().Element(PayValueStyle).Text("B' LEATHER MANUFACTURING, INC.").FontSize(8);
-
-                                payTable.Cell().Element(PayLabelStyle).Text("ACCOUNT NUMBER:").Bold().FontSize(8);
-                                payTable.Cell().Element(PayValueStyle).Text(_encabezado.ACCT).FontSize(8);
-
-                                payTable.Cell().Element(PayLabelStyle).Text("BANK:").Bold().FontSize(8);
-                                payTable.Cell().Element(PayValueStyle).Text("CITIBANK, N.A.").FontSize(8);
-
-                                payTable.Cell().Element(PayLabelStyle).Text("BANK ADDRESS:").Bold().FontSize(8);
-                                payTable.Cell().Element(PayValueStyle)
-                                    .Text("111 WALL STREET. NEW YORK, NY USA 10043").FontSize(8);
-
-                                payTable.Cell().Element(PayLabelStyle).Text("ROUTING:").Bold().FontSize(8);
-                                payTable.Cell().Element(PayValueStyle)
-                                    .Text(_encabezado.ABA.ToString().PadLeft(9, '0')).FontSize(8);
-
-                                payTable.Cell().Element(PayLabelStyle).Text("SWIFT:").Bold().FontSize(8);
-                                payTable.Cell().Element(PayValueStyle).Text(_encabezado.SWIFT).FontSize(8);
-                            });
+                        rightCol.Item().AlignRight().Width(200).Element(ComposeTotals);
+                        rightCol.Item().PaddingTop(4).AlignRight().Width(300).Element(ComposePaymentInstructions);
                     });
                 });
 
                 col.Item().PaddingTop(5).AlignRight().Text(x =>
                 {
-                    x.Span("Page ");
-                    x.CurrentPageNumber();
-                    x.Span(" of ");
-                    x.TotalPages();
+                    x.Span("Page ").Style(TextStyle.Default.FontSize(8));
+                    x.CurrentPageNumber().Style(TextStyle.Default.FontSize(8));
+                    x.Span(" of ").Style(TextStyle.Default.FontSize(8));
+                    x.TotalPages().Style(TextStyle.Default.FontSize(8));
                 });
             });
+        }
+
+        void ComposeNotes(IContainer container)
+        {
+            container
+                .BorderColor(Color.FromHex(OUTER_COLOR))
+                .BorderTop(OUTER).BorderBottom(OUTER).BorderLeft(OUTER).BorderRight(OUTER)
+                .Table(t =>
+                {
+                    t.ColumnsDefinition(c =>
+                    {
+                        c.ConstantColumn(42);
+                        c.RelativeColumn();
+                    });
+
+                    t.Cell().Background(Color.FromHex("#D9D9D9"))
+                        .BorderColor(Color.FromHex(INNER_COLOR)).BorderRight(INNER)
+                        .Padding(3).AlignMiddle()
+                        .Text("NOTES:").Bold().FontSize(8);
+
+                    t.Cell().Padding(3)
+                        .Text(!string.IsNullOrWhiteSpace(_comentarios) ? _comentarios : " ").FontSize(8);
+                });
         }
 
         void ComposeTotals(IContainer container)
         {
             var culture = new CultureInfo("en-US");
-            var lineTotal = _items.Sum(x => x.Subtotal_Linea);
-            var subTotal = lineTotal;
+            var subTotal = _items.Sum(x => x.Subtotal_Linea);
             var tax = 0.00m;
             var freight = _encabezado.valor_flete ?? 0;
             var invoiceTotal = subTotal + tax + freight;
 
-            // Una sola definición de borde uniforme para toda la tabla
             container
-                .BorderColor(Color.FromHex("#A0A0A0"))
-                .BorderTop(0.5f).BorderBottom(0.5f)
-                .BorderLeft(0.5f).BorderRight(0.5f)
-                .Table(table =>
+                .BorderColor(Color.FromHex(OUTER_COLOR))
+                .BorderTop(OUTER).BorderLeft(OUTER).BorderRight(OUTER)
+                .Table(t =>
                 {
-                    table.ColumnsDefinition(columns =>
+                    t.ColumnsDefinition(c =>
                     {
-                        columns.ConstantColumn(130);
-                        columns.ConstantColumn(40);
-                        columns.ConstantColumn(70);
+                        c.RelativeColumn();   // label
+                        c.ConstantColumn(32); // US$
+                        c.ConstantColumn(60); // amount
                     });
 
-                    // Separador interno entre celdas: solo BorderBottom en cada fila excepto la última
-                    static IContainer LabelStyle(IContainer c) =>
-                        c.BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f)
-                         .Background(Color.FromHex("#D9D9D9")).Padding(3).AlignLeft();
-                    static IContainer CurrencyStyle(IContainer c) =>
-                        c.BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f)
-                         .Padding(3).AlignLeft();
-                    static IContainer AmountStyle(IContainer c) =>
-                        c.BorderColor(Color.FromHex("#A0A0A0")).BorderBottom(0.5f)
-                         .Padding(3).AlignRight();
+                    void Row(string label, decimal amount)
+                    {
+                        t.Cell().Background(Color.FromHex("#D9D9D9"))
+                            .BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER)
+                            .PaddingLeft(3).PaddingRight(3).PaddingTop(2).PaddingBottom(2)
+                            .AlignLeft().Text(label).Bold().FontSize(8);
+                        t.Cell()
+                            .BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER)
+                            .PaddingLeft(3).PaddingRight(3).PaddingTop(2).PaddingBottom(2)
+                            .AlignLeft().Text("US$").FontSize(8);
+                        t.Cell()
+                            .BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER)
+                            .PaddingLeft(3).PaddingRight(3).PaddingTop(2).PaddingBottom(2)
+                            .AlignRight().Text(amount.ToString("N2", culture)).FontSize(8);
+                    }
 
-                    // Última fila sin BorderBottom (el borde exterior del contenedor ya lo cierra)
-                    static IContainer LabelLastStyle(IContainer c) =>
-                        c.Background(Color.FromHex("#D9D9D9")).Padding(3).AlignLeft();
-                    static IContainer CurrencyLastStyle(IContainer c) =>
-                        c.Background(Color.FromHex("#D9D9D9")).Padding(3).AlignLeft();
-                    static IContainer AmountLastStyle(IContainer c) =>
-                        c.Background(Color.FromHex("#D9D9D9")).Padding(3).AlignRight();
+                    Row("SUB TOTAL", subTotal);
+                    Row("FREIGHT", freight);
+                    Row("TAXABLE AMOUNT", tax);
+                    Row("TAX", tax);
+                    Row("OTHER CHARGES", 0);
 
-                    table.Cell().Element(LabelStyle).Text("SUB TOTAL").Bold();
-                    table.Cell().Element(CurrencyStyle).Text("US$");
-                    table.Cell().Element(AmountStyle).Text(subTotal.ToString("N2", culture));
-
-                    table.Cell().Element(LabelStyle).Text("FREIGHT").Bold();
-                    table.Cell().Element(CurrencyStyle).Text("US$");
-                    table.Cell().Element(AmountStyle).Text(freight.ToString("N2", culture));
-
-                    table.Cell().Element(LabelStyle).Text("TAXABLE AMOUNT").Bold();
-                    table.Cell().Element(CurrencyStyle).Text("US$");
-                    table.Cell().Element(AmountStyle).Text(tax.ToString("N2", culture));
-
-                    table.Cell().Element(LabelStyle).Text("TAX").Bold();
-                    table.Cell().Element(CurrencyStyle).Text("US$");
-                    table.Cell().Element(AmountStyle).Text(tax.ToString("N2", culture));
-
-                    table.Cell().Element(LabelStyle).Text("OTHER CHARGES").Bold();
-                    table.Cell().Element(CurrencyStyle).Text("US$");
-                    table.Cell().Element(AmountStyle).Text("0.00");
-
-                    // INVOICE TOTAL — última fila, sin BorderBottom interior
-                    table.Cell().Element(LabelLastStyle).Text("INVOICE TOTAL").Bold();
-                    table.Cell().Element(CurrencyLastStyle).Text("US$").Bold();
-                    table.Cell().Element(AmountLastStyle).Text(invoiceTotal.ToString("N2", culture)).Bold();
+                    // INVOICE TOTAL
+                    t.Cell().Background(Color.FromHex("#D9D9D9"))
+                        .BorderColor(Color.FromHex(OUTER_COLOR)).BorderBottom(OUTER)
+                        .PaddingLeft(3).PaddingRight(3).PaddingTop(2).PaddingBottom(2)
+                        .AlignLeft().Text("INVOICE TOTAL").Bold().FontSize(8);
+                    t.Cell().Background(Color.FromHex("#D9D9D9"))
+                        .BorderColor(Color.FromHex(OUTER_COLOR)).BorderBottom(OUTER)
+                        .PaddingLeft(3).PaddingRight(3).PaddingTop(2).PaddingBottom(2)
+                        .AlignLeft().Text("US$").Bold().FontSize(8);
+                    t.Cell().Background(Color.FromHex("#D9D9D9"))
+                        .BorderColor(Color.FromHex(OUTER_COLOR)).BorderBottom(OUTER)
+                        .PaddingLeft(3).PaddingRight(3).PaddingTop(2).PaddingBottom(2)
+                        .AlignRight().Text(invoiceTotal.ToString("N2", culture)).Bold().FontSize(8);
                 });
         }
 
-    }
+        void ComposePaymentInstructions(IContainer container)
+        {
+            container
+                .BorderColor(Color.FromHex(OUTER_COLOR))
+                .BorderTop(OUTER).BorderBottom(OUTER).BorderLeft(OUTER).BorderRight(OUTER)
+                .Table(t =>
+                {
+                    t.ColumnsDefinition(c =>
+                    {
+                        c.ConstantColumn(90);  // label
+                        c.RelativeColumn();    // value
+                    });
 
+                    t.Cell().ColumnSpan(2)
+                        .BorderColor(Color.FromHex(INNER_COLOR)).BorderBottom(INNER)
+                        .PaddingLeft(3).PaddingRight(3).PaddingTop(2).PaddingBottom(2)
+                        .Text("PAYMENT INSTRUCTIONS:").Bold().FontSize(8);
+
+                    void PayRow(string label, string value)
+                    {
+                        t.Cell().BorderColor(Color.FromHex(INNER_COLOR)).BorderRight(INNER)
+                            .PaddingLeft(3).PaddingRight(3).PaddingTop(2).PaddingBottom(2)
+                            .Text(label).Bold().FontSize(8);
+                        t.Cell()
+                            .PaddingLeft(3).PaddingRight(3).PaddingTop(2).PaddingBottom(2)
+                            .Text(value).FontSize(8);
+                    }
+
+                    PayRow("ACCOUNT NAME:", "B' LEATHER MANUFACTURING, INC.");
+                    PayRow("ACCOUNT NUMBER:", _encabezado.ACCT);
+                    PayRow("BANK:", "CITIBANK, N.A.");
+                    PayRow("BANK ADDRESS:", "111 WALL STREET. NEW YORK, NY USA 10043");
+                    PayRow("ROUTING:", _encabezado.ABA.ToString().PadLeft(9, '0'));
+                    PayRow("SWIFT:", _encabezado.SWIFT);
+                });
+        }
+    }
 }

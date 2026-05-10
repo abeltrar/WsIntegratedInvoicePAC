@@ -64,7 +64,7 @@ namespace WsIntegratedInvoicePAC
                     try
                     {
 
-                        _logger.LogInformation("Insertando informaciÛn de facturas pendientes...");
+                        _logger.LogInformation("Insertando informaci√≥n de facturas pendientes...");
 
                         using (var scope = _scopeFactory.CreateScope())
                         {
@@ -100,7 +100,7 @@ namespace WsIntegratedInvoicePAC
                             //        Fecha = DateTime.Now,
                             //        Modulo = "ObteniendoToken",
                             //        Mensaje = "No se pudo obtener el token de WebPos",
-                            //        StackTrace = "No se pudo obtener token est· vacÌo o NULL, intente el proceso de nuevo"
+                            //        StackTrace = "No se pudo obtener token est√° vac√≠o o NULL, intente el proceso de nuevo"
                             //    };
 
                             //    await facturaController.InsertLog(log);
@@ -113,7 +113,7 @@ namespace WsIntegratedInvoicePAC
 
 
                         // Leer facturas desde BD
-                        _logger.LogInformation("Buscando informaciÛn de facturas pendientes...");
+                        _logger.LogInformation("Buscando informaci√≥n de facturas pendientes...");
 
 
                         string baseurl = _config["ApiSettings:BaseUrl"];
@@ -136,8 +136,8 @@ namespace WsIntegratedInvoicePAC
 
                             if (!facturas.Any())
                             {
-                                Console.WriteLine("El listado de facturas est· vacÌo");
-                               
+                                Console.WriteLine("El listado de facturas est√° vac√≠o");
+
 
                             }
 
@@ -177,7 +177,7 @@ namespace WsIntegratedInvoicePAC
                                     string branchCod = facturaBase.branchCod;
                                     decimal? total_conversion = facturaBase.Total_Factura;
                                     DateTime? invoiceNumberRefDate = null;
-                                   
+
 
                                     if (facturaBase.Tipo_Factura == "CU")
                                     {
@@ -190,11 +190,11 @@ namespace WsIntegratedInvoicePAC
                                         destCountry = "US";
                                         totValEst = total_conversion;
                                         tax = 0;
-                                       
+
                                     }
                                     else if (facturaBase.Tipo_Factura == "CR" || facturaBase.Tipo_Factura == "DB")
                                     {
-                                        if(facturaBase.Tipo_Factura == "CR")
+                                        if (facturaBase.Tipo_Factura == "CR")
                                         {
                                             tipo_factura = "34";
                                         }
@@ -202,11 +202,11 @@ namespace WsIntegratedInvoicePAC
                                         {
                                             tipo_factura = "33";
                                         }
-                                       
+
                                         docNumber = facturaBase.NCF;
                                         invoiceNumber = facturaBase.Factura_Afectada_NC;
 
-                                        if(facturaBase.Factura_Afectada_NC.Substring(0,3) == "E44")
+                                        if (facturaBase.Factura_Afectada_NC.Substring(0, 3) == "E44")
                                         {
                                             customerType = "";
 
@@ -215,7 +215,7 @@ namespace WsIntegratedInvoicePAC
                                         {
                                             customerType = "06";
                                         }
-                                       
+
                                         currency = "USD";
                                         incoterm = "FOB";
                                         destCountry = "US";
@@ -236,9 +236,9 @@ namespace WsIntegratedInvoicePAC
                                         destCountry = "";
                                         tax = 0;
                                     }
-                                   
 
-                                    //CONSUTRUCCI”N DE ARRAY PARA CONSTRUIR LA FACTURA
+
+                                    //CONSUTRUCCI√ìN DE ARRAY PARA CONSTRUIR LA FACTURA
 
                                     var items_fact = grupo.Select(linea => new ItemFactura
                                     {
@@ -252,7 +252,8 @@ namespace WsIntegratedInvoicePAC
                                         Lote_Numero = linea.Lote_Numero,
                                         Unidad_Medida = linea.Unidad_Medida,
                                         Total_Factura = linea.Total_Factura,
-                                        Subtotal_Linea = linea.Subtotal_Linea
+                                        Subtotal_Linea = linea.Subtotal_Linea,
+                                        Descripcion2 = linea.Descripcion2
 
 
 
@@ -296,7 +297,7 @@ namespace WsIntegratedInvoicePAC
 
                                     var items = itemsList.ToArray();
 
-                                  
+
                                     var payload = new
                                     {
                                         fiscalDoc = new
@@ -345,17 +346,17 @@ namespace WsIntegratedInvoicePAC
 
 
 
-                                
-                                    _logger.LogInformation("Consumiendo servicio de WebPos para enviar informaciÛn de facturas...");
+
+                                    _logger.LogInformation("Consumiendo servicio de WebPos para enviar informaci√≥n de facturas...");
 
                                     // Enviar JSON
                                     var json = JsonConvert.SerializeObject(payload, new JsonSerializerSettings
                                     {
                                         NullValueHandling = NullValueHandling.Ignore
-                                    }); 
+                                    });
                                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                                    _logger.LogInformation("JSON final que se enviar· al servicio WebPos: {Json}", json);
+                                    _logger.LogInformation("JSON final que se enviar√° al servicio WebPos: {Json}", json);
 
                                     var log = new FE_System_Log
                                     {
@@ -419,7 +420,7 @@ namespace WsIntegratedInvoicePAC
 
                                         //INSERT CODIGO QR en BD
 
-                                        await facturaController.UpdateQRBase64(facturaBase.Factura_Numero,qrB64);
+                                        await facturaController.UpdateQRBase64(facturaBase.Factura_Numero, qrB64);
 
 
                                         // Crear el documento
@@ -439,10 +440,9 @@ namespace WsIntegratedInvoicePAC
 
                                         if (logoPath == null) throw new Exception("Logo no encontrado");
 
-                                        using (var stream = File.Create(outputPath))
-                                        {
-                                            factura.GeneratePdf(stream);
-                                        }
+                                        var rawPdf = factura.GeneratePdf();
+                                        File.WriteAllBytes(outputPath, FacturaPDFPostProcessor.HideFooterOnNonLastPages(rawPdf));
+
                                         if (!File.Exists(outputPath) || new FileInfo(outputPath).Length == 0)
                                         {
                                             var log2 = new FE_System_Log
@@ -450,12 +450,12 @@ namespace WsIntegratedInvoicePAC
                                                 Invoice = "",
                                                 Fecha = DateTime.Now,
                                                 Modulo = "GeneracionPDF",
-                                                Mensaje = "El PDF no se generÛ correctamente o est· vacÌo",
-                                                StackTrace = "El pdf no se generÛ correctamente" + facturaBase.Factura_Numero
+                                                Mensaje = "El PDF no se gener√≥ correctamente o est√° vac√≠o",
+                                                StackTrace = "El pdf no se gener√≥ correctamente" + facturaBase.Factura_Numero
                                             };
 
                                             await facturaController.InsertLog(log2);
-                                            throw new Exception("El PDF no se generÛ correctamente o est· vacÌo");
+                                            throw new Exception("El PDF no se gener√≥ correctamente o est√° vac√≠o");
                                         }
 
                                         _logger.LogInformation("Factura generada en: {path}", outputPath);
@@ -469,7 +469,7 @@ namespace WsIntegratedInvoicePAC
                                     else
                                     {
 
-                                        _logger.LogInformation("Insertando data de error por aprobaciÛn");
+                                        _logger.LogInformation("Insertando data de error por aprobaci√≥n");
 
 
                                         int status = resp.Value<int>("status");
@@ -488,8 +488,8 @@ namespace WsIntegratedInvoicePAC
                                         {
                                             Invoice = "",
                                             Fecha = DateTime.Now,
-                                            Modulo = "AutorizaciÛnAPISendToFiLe",
-                                            Mensaje = "No se realizÛ la autorizaciÛn de la factura" + facturaBase.Factura_Numero,
+                                            Modulo = "Autorizaci√≥nAPISendToFiLe",
+                                            Mensaje = "No se realiz√≥ la autorizaci√≥n de la factura" + facturaBase.Factura_Numero,
                                             StackTrace = mensajeConcatenado
                                         };
 
@@ -542,7 +542,7 @@ namespace WsIntegratedInvoicePAC
 
                                         if (dgiResp is string)
                                         {
-                                            _logger.LogWarning($"API devolviÛ texto plano: {dgiResp}");
+                                            _logger.LogWarning($"API devolvi√≥ texto plano: {dgiResp}");
 
                                             dgiResp = new
                                             {
@@ -618,12 +618,12 @@ namespace WsIntegratedInvoicePAC
                                             string qrB64 = dgiResp2.Value<string>("qrb64");
                                             string dateSentToDgi = dgiResp.Value<string>("dateRec");
 
-                                            _logger.LogInformation("construyendo informaciÛn factura para PDF ");
+                                            _logger.LogInformation("construyendo informaci√≥n factura para PDF ");
 
 
-                                           
 
-                                            //CONSUTRUCCI”N DE ARRAY PARA CONSTRUIR LA FACTURA
+
+                                            //CONSUTRUCCI√ìN DE ARRAY PARA CONSTRUIR LA FACTURA
 
                                             var items_fact = grupo.Select(linea => new ItemFactura
                                             {
@@ -637,15 +637,17 @@ namespace WsIntegratedInvoicePAC
                                                 Lote_Numero = linea.Lote_Numero,
                                                 Unidad_Medida = linea.Unidad_Medida,
                                                 Total_Factura = linea.Total_Factura,
-                                                Subtotal_Linea = linea.Subtotal_Linea
+                                                Subtotal_Linea = linea.Subtotal_Linea,
+                                                Descripcion2 = linea.Descripcion2
+
 
 
 
                                             }).ToArray();
 
 
-                                           
-                                       
+
+
                                             XDocument xmlDoc = XDocument.Parse(xmlFeSigned);
 
                                             // Obtener primeros 6 caracteres de SignatureValue esto por normatividad
@@ -697,13 +699,12 @@ namespace WsIntegratedInvoicePAC
 
                                             if (logoPath == null) throw new Exception("Logo no encontrado");
 
-                                            using (var stream = File.Create(outputPath))
-                                            {
-                                                factura.GeneratePdf(stream);
-                                            }
+                                            var rawPdf = factura.GeneratePdf();
+                                            File.WriteAllBytes(outputPath, FacturaPDFPostProcessor.HideFooterOnNonLastPages(rawPdf));
+
                                             if (!File.Exists(outputPath) || new FileInfo(outputPath).Length == 0)
                                             {
-                                                throw new Exception("El PDF no se generÛ correctamente o est· vacÌo");
+                                                throw new Exception("El PDF no se gener√≥ correctamente o est√° vac√≠o");
                                             }
 
                                             _logger.LogInformation("Factura generada en: {path}", outputPath);
@@ -722,7 +723,7 @@ namespace WsIntegratedInvoicePAC
                             }
 
 
-                         
+
 
 
                         }
@@ -762,7 +763,7 @@ namespace WsIntegratedInvoicePAC
 
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            var response = await _httpClient.PostAsync(BaseUrl+ "Token", content);
+            var response = await _httpClient.PostAsync(BaseUrl + "Token", content);
             if (!response.IsSuccessStatusCode)
                 return null;
 

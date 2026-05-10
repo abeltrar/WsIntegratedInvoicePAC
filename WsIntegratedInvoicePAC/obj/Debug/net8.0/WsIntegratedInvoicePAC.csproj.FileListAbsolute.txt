@@ -248,3 +248,17 @@ C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bi
 C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\Serilog.Sinks.EventLog.dll
 C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\Serilog.Sinks.File.dll
 C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\Serilog.Sinks.RollingFile.dll
+C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\itext.barcodes.dll
+C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\itext.bouncy-castle-connector.dll
+C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\itext.forms.dll
+C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\itext.io.dll
+C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\itext.kernel.dll
+C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\itext.layout.dll
+C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\itext.pdfa.dll
+C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\itext.pdfua.dll
+C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\itext.sign.dll
+C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\itext.styledxmlparser.dll
+C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\itext.svg.dll
+C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\itext.commons.dll
+C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\Microsoft.DotNet.PlatformAbstractions.dll
+C:\Users\apbeltran\source\repos\WsIntegratedInvoicePAC\WsIntegratedInvoicePAC\bin\Debug\net8.0\itext.bouncy-castle-adapter.dll
