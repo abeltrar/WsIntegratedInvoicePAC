@@ -160,6 +160,7 @@ namespace WsIntegratedInvoicePAC.ViewPDF
                     c.Item().Text(_encabezado.Cliente_Nombre).Bold().FontSize(8);
                     c.Item().Text(_encabezado.Direccion_Envio1).FontSize(8);
                     c.Item().Text(_encabezado.Direccion_Envio2).FontSize(8);
+                    c.Item().Text(_encabezado.Cliente_Documento_Identidad).FontSize(8);
                 });
                 row.ConstantColumn(10);
                 row.RelativeColumn().Padding(4).Column(c =>
@@ -168,6 +169,7 @@ namespace WsIntegratedInvoicePAC.ViewPDF
                     c.Item().Text(_encabezado.Cliente_Nombre).Bold().FontSize(8);
                     c.Item().Text(_encabezado.Cliente_Direccion1).FontSize(8);
                     c.Item().Text(_encabezado.Cliente_Direccion2).FontSize(8);
+                    c.Item().Text(_encabezado.Cliente_Documento_Identidad).FontSize(8);
                 });
             });
         }
