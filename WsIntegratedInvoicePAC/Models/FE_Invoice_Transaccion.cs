@@ -74,8 +74,9 @@ namespace WsIntegratedInvoicePAC.Models
         public DateTime? fecha_factura_afectada { get; set; }
         public string? Descripcion2 { get; set; }
         public string? comentarios { get; set; }
-
-
+        public string? nombre_envio { get; set; }
+        public string? direccion_envio3 { get; set; }
+        public string? direccion_envio4 { get; set; }
 
     }
 }

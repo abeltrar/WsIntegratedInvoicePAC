@@ -157,9 +157,11 @@ namespace WsIntegratedInvoicePAC.ViewPDF
                 row.RelativeColumn().Padding(4).Column(c =>
                 {
                     c.Item().Text("SHIP TO:").Bold().FontSize(8);
-                    c.Item().Text(_encabezado.Cliente_Nombre).Bold().FontSize(8);
+                    c.Item().Text(_encabezado.nombre_envio).Bold().FontSize(8);
                     c.Item().Text(_encabezado.Direccion_Envio1).FontSize(8);
                     c.Item().Text(_encabezado.Direccion_Envio2).FontSize(8);
+                    c.Item().Text(_encabezado.direccion_envio3).FontSize(8);
+                    c.Item().Text(_encabezado.direccion_envio4).FontSize(8);
                     c.Item().Text(_encabezado.Cliente_Documento_Identidad).FontSize(8);
                 });
                 row.ConstantColumn(10);
@@ -169,7 +171,10 @@ namespace WsIntegratedInvoicePAC.ViewPDF
                     c.Item().Text(_encabezado.Cliente_Nombre).Bold().FontSize(8);
                     c.Item().Text(_encabezado.Cliente_Direccion1).FontSize(8);
                     c.Item().Text(_encabezado.Cliente_Direccion2).FontSize(8);
+                    c.Item().Text("").FontSize(8);
+                    c.Item().Text("").FontSize(8);
                     c.Item().Text(_encabezado.Cliente_Documento_Identidad).FontSize(8);
+
                 });
             });
         }

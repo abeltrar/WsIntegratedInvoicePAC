@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "targets": {
     "net8.0": {
       "Azure.Core/1.38.0": {
@@ -10391,11 +10391,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj",
+      "projectUniqueName": "C:\\Repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj",
       "projectName": "WsIntegratedInvoicePAC",
-      "projectPath": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj",
+      "projectPath": "C:\\Repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj",
       "packagesPath": "C:\\Users\\apbeltran\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\obj\\",
+      "outputPath": "C:\\Repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -10414,6 +10414,7 @@
       },
       "frameworks": {
         "net8.0": {
+          "framework": "net8.0",
           "targetAlias": "net8.0",
           "projectReferences": {}
         }
@@ -10428,10 +10429,11 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.100"
+      "SdkAnalysisLevel": "10.0.300"
     },
     "frameworks": {
       "net8.0": {
+        "framework": "net8.0",
         "targetAlias": "net8.0",
         "dependencies": {
           "MailKit": {
@@ -10513,7 +10515,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json"
       }
     }
   },

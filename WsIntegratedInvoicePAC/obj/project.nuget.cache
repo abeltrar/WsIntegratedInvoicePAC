@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "N0bgHp9gO6E=",
+  "dgSpecHash": "8dfNSdbLffI=",
   "success": true,
-  "projectFilePath": "C:\\Users\\apbeltran\\source\\repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj",
+  "projectFilePath": "C:\\Repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\apbeltran\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\apbeltran\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",
@@ -187,8 +187,10 @@
     {
       "code": "NU1902",
       "level": "Warning",
-      "warningLevel": 1,
       "message": "El paquete \"MailKit\" 4.13.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-9j88-vvj5-vhgr",
+      "projectPath": "C:\\Repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Repos\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC\\WsIntegratedInvoicePAC.csproj",
       "libraryId": "MailKit",
       "targetGraphs": [
         "net8.0"
