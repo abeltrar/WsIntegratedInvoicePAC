@@ -162,7 +162,6 @@ namespace WsIntegratedInvoicePAC.ViewPDF
                     c.Item().Text(_encabezado.Direccion_Envio2).FontSize(8);
                     c.Item().Text(_encabezado.direccion_envio3).FontSize(8);
                     c.Item().Text(_encabezado.direccion_envio4).FontSize(8);
-                    c.Item().Text(_encabezado.Cliente_Documento_Identidad).FontSize(8);
                 });
                 row.ConstantColumn(10);
                 row.RelativeColumn().Padding(4).Column(c =>
@@ -173,7 +172,6 @@ namespace WsIntegratedInvoicePAC.ViewPDF
                     c.Item().Text(_encabezado.Cliente_Direccion2).FontSize(8);
                     c.Item().Text("").FontSize(8);
                     c.Item().Text("").FontSize(8);
-                    c.Item().Text(_encabezado.Cliente_Documento_Identidad).FontSize(8);
 
                 });
             });
@@ -436,7 +434,9 @@ namespace WsIntegratedInvoicePAC.ViewPDF
             var subTotal = _items.Sum(x => x.Subtotal_Linea);
             var tax = 0.00m;
             var freight = _encabezado.valor_flete ?? 0;
-            var invoiceTotal = subTotal + tax + freight;
+            var otros_cargos = _encabezado.valor_otros_cargos ?? 0;
+            var invoiceTotal = subTotal + tax + freight + otros_cargos;
+           
 
             container
                 .BorderColor(Color.FromHex(OUTER_COLOR))
@@ -470,7 +470,7 @@ namespace WsIntegratedInvoicePAC.ViewPDF
                     Row("FREIGHT", freight);
                     Row("TAXABLE AMOUNT", tax);
                     Row("TAX", tax);
-                    Row("OTHER CHARGES", 0);
+                    Row("OTHER CHARGES", otros_cargos);
 
                     // INVOICE TOTAL
                     t.Cell().Background(Color.FromHex("#D9D9D9"))

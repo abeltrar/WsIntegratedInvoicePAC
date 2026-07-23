@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WsIntegratedInvoicePAC")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+74be105ed7aeccddc339553ede9804956ea2cc2d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cf64dac4b7f14489df4aef842bc3d523f22c0507")]
 [assembly: System.Reflection.AssemblyProductAttribute("WsIntegratedInvoicePAC")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WsIntegratedInvoicePAC")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

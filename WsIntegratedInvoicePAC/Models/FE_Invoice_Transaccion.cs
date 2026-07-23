@@ -77,6 +77,7 @@ namespace WsIntegratedInvoicePAC.Models
         public string? nombre_envio { get; set; }
         public string? direccion_envio3 { get; set; }
         public string? direccion_envio4 { get; set; }
+        public decimal? valor_otros_cargos { get; set; }
 
     }
 }

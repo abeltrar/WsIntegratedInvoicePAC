@@ -295,7 +295,26 @@ namespace WsIntegratedInvoicePAC
                                         });
                                     }
 
-                                    var items = itemsList.ToArray();
+                                    if (facturaBase.valor_otros_cargos > 0)
+                                    {
+
+                                        itemsList.Add(new ItemWebPOS
+                                        {
+                                            id = (itemsList.Count + 1).ToString(),
+                                            qty = 1,
+                                            price = facturaBase.valor_otros_cargos ?? 0,
+                                            code = "Otros cargos",
+                                            desc = "Otros cargos",
+                                            itemClass = 0,
+                                            tax = tax,
+                                            comments = "",
+                                            damt = 0.00m
+                                        });
+
+
+                                    }
+
+                                        var items = itemsList.ToArray();
 
 
                                     var payload = new
